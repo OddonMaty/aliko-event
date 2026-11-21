@@ -38,7 +38,7 @@ export const POST = handle(async (req) => {
   const type = detectType(bytes); // on ne se fie pas au type annoncé par le navigateur
   if (!type) throw new HttpError(400, "Format non supporté (JPEG, PNG ou WebP)");
 
-  const blob = await put(`inv/${inv.id}/${randomUUID()}.${type.ext}`, bytes, {
+  const blob = await put(`inv/${inv.id}/${randomUUID()}.${type.ext}`, Buffer.from(bytes), {
     access: "public",
     contentType: type.mime,
     addRandomSuffix: false,
