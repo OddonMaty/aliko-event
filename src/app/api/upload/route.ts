@@ -22,6 +22,9 @@ function detectType(b: Uint8Array): { mime: string; ext: string } | null {
 
 export const POST = handle(async (req) => {
   assertSameOrigin(req);
+  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+    throw new HttpError(503, "Stockage des photos non configuré (BLOB_READ_WRITE_TOKEN manquant)");
+  }
   const user = await requireApiUser();
   await rateLimit(`upload:${user.id}`, 40, 3600);
 
