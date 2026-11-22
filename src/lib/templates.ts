@@ -3,7 +3,7 @@ import type { CategoryId } from "./catalog";
 // Moteur de designs : chaque design = une mise en page + une palette + des polices.
 // Ajouter un design = ajouter un objet ici (aucun fichier à télécharger, rien à copier).
 
-export type LayoutId = "classic" | "frame" | "arch" | "minimal" | "split";
+export type LayoutId = "classic" | "frame" | "arch" | "minimal" | "split" | "story";
 
 export interface Template {
   id: string;
@@ -21,6 +21,24 @@ const MONTSERRAT = "var(--font-montserrat), system-ui, sans-serif";
 const INTER = "var(--font-inter), system-ui, sans-serif";
 
 export const TEMPLATES: Template[] = [
+  {
+    id: "recit-ivoire",
+    name: "Récit Ivoire",
+    description: "Couverture plein écran sur votre photo, puis une invitation qui se déroule. Ivoire et or.",
+    layout: "story",
+    categories: ["mariage", "dot", "bapteme", "anniversaire"],
+    palette: { bg: "#FBF8F1", fg: "#2A2418", accent: "#C9972B", muted: "#7C705A", surface: "#F3ECDA" },
+    fonts: { display: CORMORANT, body: INTER },
+  },
+  {
+    id: "recit-nuit",
+    name: "Récit Nuit",
+    description: "Le même parcours en version sombre : noir profond et or lumineux.",
+    layout: "story",
+    categories: ["mariage", "dot", "anniversaire", "conference", "reunion"],
+    palette: { bg: "#0C0B09", fg: "#F3EBD7", accent: "#D4AF37", muted: "#A89B7C", surface: "#17150F" },
+    fonts: { display: CORMORANT, body: INTER },
+  },
   {
     id: "or-royal",
     name: "Or Royal",

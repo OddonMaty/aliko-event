@@ -98,3 +98,30 @@ CREATE TABLE audit_log (
   meta jsonb,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Invités nommés : chacun reçoit un lien personnel (?g=token) et un pass QR
+CREATE TABLE guests (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  invitation_id uuid NOT NULL REFERENCES invitations(id) ON DELETE CASCADE,
+  name text NOT NULL,
+  token text NOT NULL UNIQUE,
+  checked_in_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX guests_invitation_idx ON guests (invitation_id, created_at);
+
+-- « Mots doux » : messages publics laissés par les invités
+CREATE TABLE guestbook (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  invitation_id uuid NOT NULL REFERENCES invitations(id) ON DELETE CASCADE,
+  guest_id uuid REFERENCES guests(id) ON DELETE SET NULL,
+  name text NOT NULL,
+  message text NOT NULL,
+  hidden boolean NOT NULL DEFAULT false,
+  ip_hash text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX guestbook_invitation_idx ON guestbook (invitation_id, created_at DESC);
+
+ALTER TABLE rsvps ADD COLUMN guest_id uuid REFERENCES guests(id) ON DELETE SET NULL;
+CREATE UNIQUE INDEX rsvps_guest_uidx ON rsvps (guest_id) WHERE guest_id IS NOT NULL;

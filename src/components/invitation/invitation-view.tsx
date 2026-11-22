@@ -1,8 +1,9 @@
 import type { CSSProperties, ReactNode } from "react";
-import { CalendarDays, Clock, MapPin, Phone, Shirt } from "lucide-react";
+import { CalendarDays, Clock, MapPin, Navigation, Phone, Shirt } from "lucide-react";
 
 import { isAllowedImageUrl, isAllowedMapUrl, type InvitationContent } from "@/lib/content";
 import type { Template } from "@/lib/templates";
+import { Countdown } from "./countdown";
 import { formatDateFr } from "@/lib/utils";
 
 type Palette = Template["palette"];
@@ -12,6 +13,10 @@ interface ViewProps {
   template: Template;
   /** Affiche « Créé avec Aliko Event » (masqué pour le palier Premium). */
   brand?: boolean;
+  /** Prénom/nom de l'invité (lien personnel) : affiché dans l'accueil. */
+  guestName?: string;
+  /** Aperçu intégré (éditeur, galerie) : la couverture ne prend pas tout l'écran. */
+  embedded?: boolean;
   children?: ReactNode;
 }
 
@@ -243,8 +248,49 @@ function CoverSplit({ c, t }: { c: InvitationContent; t: Template }) {
   );
 }
 
-function Cover({ c, t }: { c: InvitationContent; t: Template }) {
+/** Couverture « Récit » : photo plein écran, titre en grand, fondu vers le contenu. */
+function CoverStory({ c, t, compact }: { c: InvitationContent; t: Template; compact?: boolean }) {
+  const p = t.palette;
+  const photo = c.photos[0] && isAllowedImageUrl(c.photos[0]) ? c.photos[0] : null;
+  return (
+    <section
+      className={`relative isolate flex flex-col justify-between overflow-hidden ${compact ? "h-[560px]" : "min-h-[100svh]"}`}
+      style={{ background: p.bg }}
+    >
+      {photo ? (
+        <Photo src={photo} className="absolute inset-0 -z-20 size-full object-cover" />
+      ) : (
+        <div className="absolute inset-0 -z-20" style={{ background: `radial-gradient(120% 70% at 50% 0%, ${p.surface} 0%, ${p.bg} 100%)` }} />
+      )}
+      <div
+        className="absolute inset-0 -z-10"
+        style={{ background: `linear-gradient(to bottom, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0) 26%, ${p.bg}00 48%, ${p.bg} 96%)` }}
+      />
+      <div className="px-8 pt-12 text-center">
+        <span className="mx-auto mb-4 block size-1.5 rotate-45" style={{ background: photo ? "#ffffff" : p.accent }} aria-hidden />
+        {c.eyebrow && (
+          <p className="text-[10px] tracking-[0.35em] uppercase" style={{ color: photo ? "#ffffffd9" : p.accent }}>
+            {c.eyebrow}
+          </p>
+        )}
+      </div>
+      <div className="px-8 pb-10 text-center">
+        <h1 className="text-6xl leading-none italic sm:text-7xl" style={{ fontFamily: t.fonts.display, color: p.fg, fontWeight: 500 }}>
+          Invitation
+        </h1>
+        <p className="mt-8 text-[10px] tracking-[0.3em] uppercase" style={{ color: p.muted }}>
+          Faire défiler
+        </p>
+        <span className="mx-auto mt-2 block h-6 w-px" style={{ background: p.accent }} aria-hidden />
+      </div>
+    </section>
+  );
+}
+
+function Cover({ c, t, compact }: { c: InvitationContent; t: Template; compact?: boolean }) {
   switch (t.layout) {
+    case "story":
+      return <CoverStory c={c} t={t} compact={compact} />;
     case "frame":
       return <CoverFrame c={c} t={t} />;
     case "arch":
@@ -260,24 +306,57 @@ function Cover({ c, t }: { c: InvitationContent; t: Template }) {
 
 /* ───────────── CORPS (commun) ───────────── */
 
-function Body({ c, t }: { c: InvitationContent; t: Template }) {
+function Body({ c, t, guestName }: { c: InvitationContent; t: Template; guestName?: string }) {
   const p = t.palette;
   const left = t.layout === "minimal" || t.layout === "split";
   const align = left ? "text-left" : "text-center";
   const { date, time } = dateTime(c);
   const gallery = c.photos.slice(1).filter(isAllowedImageUrl);
-  const mapOk = c.mapUrl && isAllowedMapUrl(c.mapUrl);
   const phoneDigits = c.contactPhone.replace(/[^\d+]/g, "");
+  const story = t.layout === "story";
+  const names = c.title.split(/\s*&\s*|\s+et\s+/i).filter(Boolean);
+  const target = c.date ? `${c.date}T${c.time || "00:00"}:00` : "";
 
   return (
     <div className="space-y-10 px-6 py-10" style={{ background: p.bg }}>
+      <div className="text-center">
+        {story && (
+          <>
+            <p className="mb-6 text-[10px] tracking-[0.35em] uppercase" style={{ color: p.muted }}>
+              Bienvenue à notre célébration
+            </p>
+            {names.length === 2 ? (
+              <h2 className="text-5xl leading-[1.1]" style={{ fontFamily: t.fonts.display, color: p.fg, fontWeight: 500 }}>
+                {names[0]}
+                <span className="my-2 block text-3xl italic" style={{ color: p.accent }}>
+                  &amp;
+                </span>
+                {names[1]}
+              </h2>
+            ) : (
+              <h2 className="text-4xl leading-tight" style={{ fontFamily: t.fonts.display, color: p.fg, fontWeight: 500 }}>
+                {c.title}
+              </h2>
+            )}
+            {c.subtitle && (
+              <p className="mt-4 text-sm" style={{ color: p.muted }}>
+                {c.subtitle}
+              </p>
+            )}
+          </>
+        )}
+        <p className={`${story ? "mt-12" : ""} text-2xl italic`} style={{ fontFamily: t.fonts.display, color: p.fg }}>
+          Cher(e) {guestName ? guestName : "invité(e)"}
+        </p>
+      </div>
+
       {c.message && (
         <p className={`${align} mx-auto max-w-md text-base leading-relaxed italic`} style={{ color: p.fg, fontFamily: t.fonts.display }}>
           « {c.message} »
         </p>
       )}
 
-      {(date || time || c.venueName || c.address || c.dressCode) && (
+      {(date || time || c.dressCode) && (
         <div className="space-y-4 rounded-lg p-6 text-sm" style={{ background: p.surface, color: p.fg }}>
           {date && (
             <div className="flex items-start gap-3">
@@ -291,26 +370,6 @@ function Body({ c, t }: { c: InvitationContent; t: Template }) {
               <span>{time}</span>
             </div>
           )}
-          {(c.venueName || c.address) && (
-            <div className="flex items-start gap-3">
-              <MapPin className="mt-0.5 size-4 shrink-0" style={{ color: p.accent }} />
-              <div>
-                {c.venueName && <p className="font-medium">{c.venueName}</p>}
-                {c.address && <p style={{ color: p.muted }}>{c.address}</p>}
-                {mapOk && (
-                  <a
-                    href={c.mapUrl}
-                    target="_blank"
-                    rel="noopener noreferrer nofollow"
-                    className="mt-1 inline-block text-xs underline underline-offset-4"
-                    style={{ color: p.accent }}
-                  >
-                    Voir sur la carte
-                  </a>
-                )}
-              </div>
-            </div>
-          )}
           {c.dressCode && (
             <div className="flex items-start gap-3">
               <Shirt className="mt-0.5 size-4 shrink-0" style={{ color: p.accent }} />
@@ -318,6 +377,10 @@ function Body({ c, t }: { c: InvitationContent; t: Template }) {
             </div>
           )}
         </div>
+      )}
+
+      {target && (
+        <Countdown target={target} label="Rendez-vous dans" background={p.accent} color={p.bg} fontFamily={t.fonts.display} />
       )}
 
       {c.program.length > 0 && (
@@ -356,13 +419,64 @@ function Body({ c, t }: { c: InvitationContent; t: Template }) {
   );
 }
 
-export function InvitationView({ content, template, brand = true, children }: ViewProps) {
+function Location({ c, t }: { c: InvitationContent; t: Template }) {
+  const p = t.palette;
+  const mapOk = c.mapUrl && isAllowedMapUrl(c.mapUrl);
+  if (!c.venueName && !c.address && !mapOk) return null;
+  return (
+    <section className="px-6 py-10 text-center" style={{ background: p.bg }}>
+      <h2 className="mb-5 text-2xl italic" style={{ fontFamily: t.fonts.display, color: p.fg }}>
+        Localisation du lieu
+      </h2>
+      <div className="rounded-2xl p-6" style={{ background: p.surface }}>
+        <MapPin className="mx-auto mb-3 size-5" style={{ color: p.accent }} />
+        {c.venueName && (
+          <p className="font-medium" style={{ color: p.fg }}>
+            {c.venueName}
+          </p>
+        )}
+        {c.address && (
+          <p className="mt-1 text-sm" style={{ color: p.muted }}>
+            {c.address}
+          </p>
+        )}
+        {mapOk && (
+          <a
+            href={c.mapUrl}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            className="mt-5 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium"
+            style={{ background: p.accent, color: p.bg }}
+          >
+            <Navigation className="size-4" /> Ouvrir l&apos;itinéraire
+          </a>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function Closing({ t }: { t: Template }) {
+  const p = t.palette;
+  return (
+    <section className="px-8 pt-4 pb-12 text-center" style={{ background: p.bg }}>
+      <span className="mx-auto mb-5 block size-1.5 rotate-45" style={{ background: p.accent }} aria-hidden />
+      <p className="text-xl italic" style={{ fontFamily: t.fonts.display, color: p.fg }}>
+        Nous avons hâte de vivre ce moment avec vous.
+      </p>
+    </section>
+  );
+}
+
+export function InvitationView({ content, template, brand = true, guestName, embedded = false, children }: ViewProps) {
   const p = template.palette;
   return (
     <div className="w-full overflow-hidden" style={{ background: p.bg, color: p.fg, fontFamily: template.fonts.body }}>
-      <Cover c={content} t={template} />
-      <Body c={content} t={template} />
+      <Cover c={content} t={template} compact={embedded} />
+      <Body c={content} t={template} guestName={guestName} />
       {children}
+      <Location c={content} t={template} />
+      <Closing t={template} />
       {brand && (
         <p className="pb-8 text-center text-[11px] tracking-[0.2em] uppercase" style={{ color: p.muted }}>
           Créé avec Aliko Event
@@ -374,5 +488,5 @@ export function InvitationView({ content, template, brand = true, children }: Vi
 
 /** Vignette (couverture seule) pour la galerie des modèles. */
 export function InvitationCover({ content, template }: { content: InvitationContent; template: Template }) {
-  return <Cover c={content} t={template} />;
+  return <Cover c={content} t={template} compact />;
 }

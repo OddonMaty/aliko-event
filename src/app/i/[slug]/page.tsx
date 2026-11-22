@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
 import { cache } from "react";
 
+import { Guestbook, type GuestbookMessage } from "@/components/guestbook";
+import { GuestPass } from "@/components/guest-pass";
 import { InvitationView } from "@/components/invitation/invitation-view";
 import { ReportButton } from "@/components/report-button";
 import { RsvpForm } from "@/components/rsvp-form";
 import { TIER_INFO, type Tier } from "@/lib/catalog";
 import { isAllowedImageUrl } from "@/lib/content";
 import { q } from "@/lib/db";
+import { findGuest } from "@/lib/guests";
 import { parseStoredContent } from "@/lib/invitations";
 import { getTemplate } from "@/lib/templates";
+import { formatDateFr } from "@/lib/utils";
 
 // Page publique d'une invitation : jamais indexée par les moteurs de recherche.
-type Props = { params: Promise<{ slug: string }> };
+type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ g?: string }> };
 
 const load = cache(async (slug: string) => {
   if (!/^[a-z0-9-]{3,60}$/.test(slug)) return null;
@@ -48,8 +52,9 @@ function Notice({ title, text }: { title: string; text: string }) {
   );
 }
 
-export default async function InvitationPage({ params }: Props) {
+export default async function InvitationPage({ params, searchParams }: Props) {
   const { slug } = await params;
+  const { g } = await searchParams;
   const inv = await load(slug);
 
   if (!inv) return <Notice title="Invitation introuvable" text="Ce lien n'est pas valide. Vérifiez-le auprès de la personne qui vous a invité(e)." />;
@@ -64,11 +69,32 @@ export default async function InvitationPage({ params }: Props) {
   if (!template) return <Notice title="Invitation indisponible" text="Cette invitation n'est plus disponible." />;
   const content = parseStoredContent(inv.content);
 
+  // Invité identifié par son lien personnel (?g=...) : accueil nominatif, réponse liée, pass QR.
+  const guestRow = await findGuest(inv.id, g).catch(() => null);
+  const guest = guestRow && g ? { token: g, name: guestRow.name } : undefined;
+  let answered: "yes" | "no" | "maybe" | null = null;
+  if (guestRow) {
+    const r = await q<{ attendance: "yes" | "no" | "maybe" }>`SELECT attendance FROM rsvps WHERE guest_id = ${guestRow.id}`;
+    answered = r[0]?.attendance ?? null;
+  }
+
+  let notes: GuestbookMessage[] = [];
+  if (content.guestbookEnabled) {
+    const rows = await q<{ id: string; name: string; message: string; created_at: Date }>`
+      SELECT id, name, message, created_at FROM guestbook
+      WHERE invitation_id = ${inv.id} AND hidden = false ORDER BY created_at DESC LIMIT 50`;
+    notes = rows.map((m) => ({ ...m, created_at: new Date(m.created_at).toISOString() }));
+  }
+
   return (
     <main className="min-h-screen" style={{ background: template.palette.bg }}>
       <div className="mx-auto max-w-xl">
-        <InvitationView content={content} template={template} brand={!TIER_INFO[inv.tier].brandingFree}>
-          {content.rsvpEnabled && <RsvpForm slug={inv.slug} template={template} deadline={content.rsvpDeadline || undefined} />}
+        <InvitationView content={content} template={template} brand={!TIER_INFO[inv.tier].brandingFree} guestName={guest?.name}>
+          {content.rsvpEnabled && (
+            <RsvpForm slug={inv.slug} template={template} deadline={content.rsvpDeadline || undefined} guest={guest} answered={answered} />
+          )}
+          {content.guestbookEnabled && <Guestbook slug={inv.slug} template={template} guest={guest} initial={notes} />}
+          {guest && <GuestPass token={guest.token} name={guest.name} date={formatDateFr(content.date, "full")} template={template} />}
         </InvitationView>
         <ReportButton slug={inv.slug} color={template.palette.muted} />
       </div>

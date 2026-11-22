@@ -3,7 +3,8 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
-import { Editor, type RsvpItem } from "@/components/editor";
+import { Editor, type MessageItem, type RsvpItem } from "@/components/editor";
+import type { GuestItem } from "@/components/guest-manager";
 import { SiteHeader } from "@/components/site-header";
 import { requireUser } from "@/lib/auth";
 import { q } from "@/lib/db";
@@ -34,6 +35,17 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
      FROM rsvps WHERE invitation_id = ${inv.id} ORDER BY created_at DESC LIMIT 1000`;
   const items: RsvpItem[] = rsvps.map((r) => ({ ...r, created_at: new Date(r.created_at).toISOString() }));
 
+  const guestRows = await q<{ id: string; name: string; token: string; attendance: "yes" | "no" | "maybe" | null }>`
+    SELECT g.id, g.name, g.token, r.attendance
+    FROM guests g LEFT JOIN rsvps r ON r.guest_id = g.id
+    WHERE g.invitation_id = ${inv.id} ORDER BY g.created_at ASC LIMIT 1000`;
+  const guests: GuestItem[] = guestRows;
+
+  const messageRows = await q<{ id: string; name: string; message: string; created_at: Date }>`
+    SELECT id, name, message, created_at FROM guestbook
+    WHERE invitation_id = ${inv.id} AND hidden = false ORDER BY created_at DESC LIMIT 200`;
+  const messages: MessageItem[] = messageRows.map((m) => ({ ...m, created_at: new Date(m.created_at).toISOString() }));
+
   return (
     <>
       <SiteHeader />
@@ -46,6 +58,8 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
           template={template}
           initialContent={parseStoredContent(inv.content)}
           rsvps={items}
+          guests={guests}
+          messages={messages}
           baseUrl={appUrl()}
         />
       </main>

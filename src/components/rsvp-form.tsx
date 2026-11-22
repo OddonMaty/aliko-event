@@ -8,11 +8,21 @@ import type { Template } from "@/lib/templates";
 
 type Att = "yes" | "no" | "maybe";
 
-export function RsvpForm({ slug, template, deadline }: { slug: string; template: Template; deadline?: string }) {
+interface Props {
+  slug: string;
+  template: Template;
+  deadline?: string;
+  /** Invité identifié par son lien personnel. */
+  guest?: { token: string; name: string };
+  /** Réponse déjà enregistrée pour cet invité. */
+  answered?: Att | null;
+}
+
+export function RsvpForm({ slug, template, deadline, guest, answered = null }: Props) {
   const p = template.palette;
-  const [attendance, setAttendance] = useState<Att>("yes");
+  const [attendance, setAttendance] = useState<Att>(answered ?? "yes");
   const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState<null | { updated: boolean }>(null);
+  const [done, setDone] = useState<Att | null>(answered);
   const [error, setError] = useState("");
   const [token, setToken] = useState("");
 
@@ -21,7 +31,7 @@ export function RsvpForm({ slug, template, deadline }: { slug: string; template:
     color: p.fg,
     border: `1px solid ${p.accent}66`,
   } as const;
-  const inputCls = "w-full rounded-md px-3 py-2 text-sm outline-none placeholder:opacity-50 focus:ring-2";
+  const inputCls = "w-full rounded-lg px-3 py-2.5 text-sm outline-none placeholder:opacity-50 focus:ring-2";
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -34,7 +44,8 @@ export function RsvpForm({ slug, template, deadline }: { slug: string; template:
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           slug,
-          name: fd.get("name"),
+          guestToken: guest?.token,
+          name: guest ? guest.name : fd.get("name"),
           phone: fd.get("phone") ?? "",
           attendance,
           partySize: attendance === "no" ? 1 : Number(fd.get("partySize") ?? 1),
@@ -44,7 +55,7 @@ export function RsvpForm({ slug, template, deadline }: { slug: string; template:
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error ?? "Envoi impossible");
-      setDone({ updated: Boolean(data.updated) });
+      setDone(attendance);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Envoi impossible");
     } finally {
@@ -53,13 +64,28 @@ export function RsvpForm({ slug, template, deadline }: { slug: string; template:
   }
 
   if (done) {
+    const first = guest?.name.split(" ")[0];
+    const text =
+      done === "yes"
+        ? `Présence confirmée. À très bientôt${first ? `, ${first}` : ""}.`
+        : done === "no"
+          ? "Réponse enregistrée. Vous nous manquerez."
+          : "Réponse enregistrée. Confirmez-nous dès que possible.";
     return (
-      <section className="px-6 pb-12 text-center" style={{ background: p.bg }}>
-        <div className="rounded-lg p-8" style={{ background: p.surface, color: p.fg }}>
-          <Check className="mx-auto mb-3 size-8" style={{ color: p.accent }} />
-          <p className="text-lg font-semibold" style={{ fontFamily: template.fonts.display }}>
-            Merci, votre réponse est enregistrée{done.updated ? " (mise à jour)" : ""} !
+      <section className="px-6 py-10 text-center" style={{ background: p.bg }}>
+        <h2 className="mb-5 text-2xl italic" style={{ fontFamily: template.fonts.display, color: p.fg }}>
+          Votre présence
+        </h2>
+        <div className="rounded-2xl p-8" style={{ background: p.surface, color: p.fg }}>
+          <span className="mx-auto mb-4 flex size-11 items-center justify-center rounded-full" style={{ background: `${p.accent}26` }}>
+            <Check className="size-5" style={{ color: p.accent }} />
+          </span>
+          <p className="text-lg" style={{ fontFamily: template.fonts.display }}>
+            {text}
           </p>
+          <button type="button" onClick={() => setDone(null)} className="mt-4 text-xs underline underline-offset-4" style={{ color: p.muted }}>
+            Modifier ma réponse
+          </button>
         </div>
       </section>
     );
@@ -71,7 +97,7 @@ export function RsvpForm({ slug, template, deadline }: { slug: string; template:
       type="button"
       onClick={() => setAttendance(v)}
       aria-pressed={attendance === v}
-      className="flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors"
+      className="flex-1 rounded-full px-3 py-2.5 text-sm font-medium transition-colors"
       style={
         attendance === v
           ? { background: p.accent, color: p.bg, border: `1px solid ${p.accent}` }
@@ -83,11 +109,11 @@ export function RsvpForm({ slug, template, deadline }: { slug: string; template:
   );
 
   return (
-    <section className="px-6 pb-12" style={{ background: p.bg }}>
-      <form onSubmit={submit} className="space-y-4 rounded-lg p-6" style={{ background: p.surface, color: p.fg }}>
-        <h2 className="text-center text-xl font-semibold" style={{ fontFamily: template.fonts.display }}>
-          Confirmez votre présence
-        </h2>
+    <section className="px-6 py-10" style={{ background: p.bg }}>
+      <h2 className="mb-5 text-center text-2xl italic" style={{ fontFamily: template.fonts.display, color: p.fg }}>
+        Votre présence
+      </h2>
+      <form onSubmit={submit} className="space-y-4 rounded-2xl p-6" style={{ background: p.surface, color: p.fg }}>
         {deadline && (
           <p className="text-center text-xs" style={{ color: p.muted }}>
             Merci de répondre avant le {deadline.split("-").reverse().join("/")}
@@ -98,12 +124,20 @@ export function RsvpForm({ slug, template, deadline }: { slug: string; template:
           {opt("maybe", "Peut-être")}
           {opt("no", "Absent")}
         </div>
-        <input name="name" required minLength={2} maxLength={80} placeholder="Votre nom" autoComplete="name" className={inputCls} style={field} />
-        <input name="phone" type="tel" maxLength={30} placeholder="Téléphone (optionnel)" autoComplete="tel" className={inputCls} style={field} />
+        {guest ? (
+          <p className="text-center text-sm" style={{ color: p.muted }}>
+            Réponse au nom de <span style={{ color: p.fg }}>{guest.name}</span>
+          </p>
+        ) : (
+          <>
+            <input name="name" required minLength={2} maxLength={80} placeholder="Votre nom complet" autoComplete="name" className={inputCls} style={field} />
+            <input name="phone" type="tel" maxLength={30} placeholder="Téléphone (optionnel)" autoComplete="tel" className={inputCls} style={field} />
+          </>
+        )}
         {attendance !== "no" && (
           <label className="flex items-center justify-between gap-3 text-sm">
             <span>Nombre de personnes</span>
-            <select name="partySize" defaultValue="1" className="rounded-md px-3 py-2 text-sm" style={{ ...field, background: p.surface }}>
+            <select name="partySize" defaultValue="1" className="rounded-lg px-3 py-2 text-sm" style={{ ...field, background: p.surface }}>
               {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
                 <option key={n} value={n}>
                   {n}
@@ -112,7 +146,7 @@ export function RsvpForm({ slug, template, deadline }: { slug: string; template:
             </select>
           </label>
         )}
-        <textarea name="message" rows={3} maxLength={300} placeholder="Un petit mot (optionnel)" className={inputCls} style={field} />
+        <textarea name="message" rows={2} maxLength={300} placeholder="Un message privé pour les hôtes (optionnel)" className={inputCls} style={field} />
         <Turnstile onToken={setToken} />
         {error && (
           <p role="alert" className="text-sm" style={{ color: "#f97066" }}>
@@ -122,7 +156,7 @@ export function RsvpForm({ slug, template, deadline }: { slug: string; template:
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-semibold disabled:opacity-60"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold disabled:opacity-60"
           style={{ background: p.accent, color: p.bg }}
         >
           {loading && <Loader2 className="size-4 animate-spin" />}

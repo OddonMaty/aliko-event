@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Download, Loader2, Plus, Save, Send, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Download, EyeOff, Loader2, Plus, Save, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { CopyButton } from "@/components/copy-button";
+import { GuestManager, type GuestItem } from "@/components/guest-manager";
 import { InvitationView } from "@/components/invitation/invitation-view";
 import { PhotoUploader } from "@/components/photo-uploader";
 import { Badge } from "@/components/ui/badge";
@@ -30,11 +32,20 @@ export interface RsvpItem {
   created_at: string;
 }
 
+export interface MessageItem {
+  id: string;
+  name: string;
+  message: string;
+  created_at: string;
+}
+
 interface Props {
   invitation: { id: string; slug: string; status: "draft" | "published" | "suspended" | "archived"; tier: Tier };
   template: Template;
   initialContent: InvitationContent;
   rsvps: RsvpItem[];
+  guests: GuestItem[];
+  messages: MessageItem[];
   baseUrl: string;
 }
 
@@ -54,7 +65,9 @@ function Field({ id, label, hint, children }: { id: string; label: string; hint?
   );
 }
 
-export function Editor({ invitation, template, initialContent, rsvps, baseUrl }: Props) {
+export function Editor({ invitation, template, initialContent, rsvps, guests, messages, baseUrl }: Props) {
+  const router = useRouter();
+  const [hiding, setHiding] = useState<string | null>(null);
   const info = TIER_INFO[invitation.tier];
   const [content, setContent] = useState<InvitationContent>(initialContent);
   const [slug, setSlug] = useState(invitation.slug);
@@ -109,13 +122,27 @@ export function Editor({ invitation, template, initialContent, rsvps, baseUrl }:
     }
   }
 
+  async function hideMessage(messageId: string) {
+    setHiding(messageId);
+    try {
+      const res = await fetch(`/api/invitations/${invitation.id}/guestbook?messageId=${messageId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Action impossible");
+      toast.success("Message masqué");
+      router.refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Action impossible");
+    } finally {
+      setHiding(null);
+    }
+  }
+
   const counts = {
     yes: rsvps.filter((r) => r.attendance === "yes").reduce((n, r) => n + r.party_size, 0),
     no: rsvps.filter((r) => r.attendance === "no").length,
     maybe: rsvps.filter((r) => r.attendance === "maybe").length,
   };
 
-  const preview = <InvitationView content={content} template={template} brand={!info.brandingFree} />;
+  const preview = <InvitationView content={content} template={template} brand={!info.brandingFree} embedded />;
   const whatsapp = `https://wa.me/?text=${encodeURIComponent(`Vous êtes invité(e) : ${content.title}\n${link}`)}`;
 
   return (
@@ -155,6 +182,7 @@ export function Editor({ invitation, template, initialContent, rsvps, baseUrl }:
             <TabsTrigger value="contenu">Contenu</TabsTrigger>
             <TabsTrigger value="photos">Photos</TabsTrigger>
             <TabsTrigger value="partage">Partage</TabsTrigger>
+            <TabsTrigger value="invites">Invités ({guests.length})</TabsTrigger>
             <TabsTrigger value="reponses">Réponses ({rsvps.length})</TabsTrigger>
             <TabsTrigger value="apercu" className="lg:hidden">Aperçu</TabsTrigger>
           </TabsList>
@@ -273,6 +301,15 @@ export function Editor({ invitation, template, initialContent, rsvps, baseUrl }:
                     />
                     Permettre à mes invités de confirmer leur présence
                   </label>
+                  <label className="flex items-center gap-3 text-sm">
+                    <input
+                      type="checkbox"
+                      className="accent-primary size-4"
+                      checked={content.guestbookEnabled}
+                      onChange={(e) => set("guestbookEnabled", e.target.checked)}
+                    />
+                    Afficher les « mots doux » (messages publics de mes invités)
+                  </label>
                   {content.rsvpEnabled && (
                     <Field id="deadline" label="Date limite de réponse (optionnel)">
                       <Input id="deadline" type="date" value={content.rsvpDeadline} onChange={(e) => set("rsvpDeadline", e.target.value)} />
@@ -366,6 +403,19 @@ export function Editor({ invitation, template, initialContent, rsvps, baseUrl }:
             </Card>
           </TabsContent>
 
+          {/* INVITÉS */}
+          <TabsContent value="invites">
+            <GuestManager
+              invitationId={invitation.id}
+              slug={savedSlug}
+              title={content.title}
+              baseUrl={baseUrl}
+              published={status === "published"}
+              cap={info.maxRsvp}
+              guests={guests}
+            />
+          </TabsContent>
+
           {/* RÉPONSES */}
           <TabsContent value="reponses">
             <Card>
@@ -409,6 +459,36 @@ export function Editor({ invitation, template, initialContent, rsvps, baseUrl }:
                 )}
               </CardContent>
             </Card>
+
+            {messages.length > 0 && (
+              <Card className="mt-6">
+                <CardHeader>
+                  <CardTitle>Mots doux ({messages.length})</CardTitle>
+                  <CardDescription>Messages publics laissés par vos invités. Vous pouvez en masquer.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="divide-y">
+                    {messages.map((m) => (
+                      <li key={m.id} className="flex items-start justify-between gap-3 py-3 text-sm">
+                        <div>
+                          <p className="italic">« {m.message} »</p>
+                          <p className="text-muted-foreground mt-1 text-xs">{m.name}</p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => hideMessage(m.id)}
+                          disabled={hiding === m.id}
+                        >
+                          {hiding === m.id ? <Loader2 className="animate-spin" /> : <EyeOff />} Masquer
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
 
           <TabsContent value="apercu" className="lg:hidden">

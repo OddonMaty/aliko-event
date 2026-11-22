@@ -3,6 +3,7 @@ import { z } from "zod";
 import { TIER_INFO, type Tier } from "@/lib/catalog";
 import { q } from "@/lib/db";
 import { handle, json, readJson } from "@/lib/http";
+import { findGuest } from "@/lib/guests";
 import { parseStoredContent } from "@/lib/invitations";
 import { assertSameOrigin, clientIp, hashIp, HttpError, rateLimit, verifyTurnstile } from "@/lib/security";
 
@@ -14,6 +15,7 @@ const schema = z.object({
   attendance: z.enum(["yes", "no", "maybe"]),
   partySize: z.number().int().min(1).max(10).default(1),
   message: z.string().trim().max(300).optional().default(""),
+  guestToken: z.string().max(40).optional(),
   turnstile: z.string().optional(),
 });
 
@@ -40,6 +42,19 @@ export const POST = handle(async (req) => {
   }
 
   const phone = body.phone || null;
+
+  // Invité identifié par son lien personnel : une seule réponse par invité, au nom enregistré par l'organisateur.
+  if (body.guestToken) {
+    const guest = await findGuest(inv.id, body.guestToken);
+    if (!guest) throw new HttpError(404, "Lien d'invité invalide");
+    await q`INSERT INTO rsvps (invitation_id, guest_id, name, phone, email, attendance, party_size, message, ip_hash)
+            VALUES (${inv.id}, ${guest.id}, ${guest.name}, ${phone}, ${body.email || null}, ${body.attendance}, ${body.partySize}, ${body.message || null}, ${ipHash})
+            ON CONFLICT (guest_id) WHERE guest_id IS NOT NULL
+            DO UPDATE SET attendance = EXCLUDED.attendance, party_size = EXCLUDED.party_size, message = EXCLUDED.message,
+                          phone = EXCLUDED.phone, email = EXCLUDED.email, ip_hash = EXCLUDED.ip_hash, created_at = now()`;
+    return json({ ok: true });
+  }
+
   // Doublon (même nom + même téléphone) : on met à jour la réponse précédente.
   const existing = await q<{ id: string }>`
     SELECT id FROM rsvps

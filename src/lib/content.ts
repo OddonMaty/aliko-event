@@ -72,6 +72,7 @@ export const contentSchema = z.object({
     .default([]),
   rsvpEnabled: z.boolean().default(true),
   rsvpDeadline: isoDate.default(""),
+  guestbookEnabled: z.boolean().default(true),
 });
 
 export type InvitationContent = z.infer<typeof contentSchema>;
@@ -95,6 +96,7 @@ export function sampleContent(categoryId: CategoryId): InvitationContent {
     photos: [],
     rsvpEnabled: true,
     rsvpDeadline: "",
+    guestbookEnabled: true,
   };
 }
 

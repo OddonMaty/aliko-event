@@ -44,7 +44,7 @@ export default async function TemplatePage({ params, searchParams }: Props) {
               <p className="text-muted-foreground mt-2">{template.description}</p>
             </div>
             <div className="mx-auto max-w-md overflow-hidden rounded-2xl border shadow-xl">
-              <InvitationView content={demo} template={template} brand={false} />
+              <InvitationView content={demo} template={template} brand={false} embedded />
             </div>
             <p className="text-muted-foreground mt-3 text-center text-xs">Aperçu avec un texte d'exemple. Tout est modifiable après l'achat.</p>
           </div>
