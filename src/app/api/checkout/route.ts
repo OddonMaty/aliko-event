@@ -9,6 +9,7 @@ import { FlexpayError, normalizeDrcPhone, requestCardPayment, requestMobilePayme
 import { handle, json, readJson } from "@/lib/http";
 import { flexpayAmount, toMinorAmount } from "@/lib/money";
 import { assertSameOrigin, audit, HttpError, rateLimit, randomSlug } from "@/lib/security";
+import { isTestPayments } from "@/lib/testmode";
 import { getTemplate } from "@/lib/templates";
 import { appUrl } from "@/lib/utils";
 
@@ -16,7 +17,7 @@ const schema = z.object({
   templateId: z.string().max(50),
   category: z.enum(CATEGORY_IDS),
   tier: z.enum(TIERS),
-  method: z.enum(["mobile", "card"]),
+  method: z.enum(["mobile", "card", "test"]),
   currency: z.enum(["USD", "CDF"]),
   phone: z.string().max(30).optional().default(""),
 });
@@ -27,6 +28,7 @@ export const POST = handle(async (req) => {
   await rateLimit(`checkout:${user.id}`, 8, 3600);
 
   const body = schema.parse(await readJson(req));
+  if (body.method === "test" && !isTestPayments()) throw new HttpError(403, "Le mode test est désactivé");
   const template = getTemplate(body.templateId);
   if (!template || !template.categories.includes(body.category)) throw new HttpError(400, "Design indisponible pour cette catégorie");
   const category = getCategory(body.category)!;
@@ -55,6 +57,8 @@ export const POST = handle(async (req) => {
         VALUES (${invitationId}, ${orderId}, ${user.id}, ${slug}, ${body.templateId}, ${body.category}, ${body.tier}, 'awaiting_payment', ${content}::jsonb)`,
   ]);
   await audit(user.id, "order.created", "order", orderId, { tier: body.tier, category: body.category, currency: body.currency });
+
+  if (body.method === "test") return json({ orderId, next: `/acheter/simulation?order=${orderId}` });
 
   const callbackSecret = process.env.FLEXPAY_CALLBACK_SECRET;
   if (!callbackSecret) throw new Error("FLEXPAY_CALLBACK_SECRET manquant");

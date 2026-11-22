@@ -4,6 +4,7 @@ import { Inter, Playfair_Display, Cormorant_Garamond, Montserrat } from "next/fo
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { isTestPayments } from "@/lib/testmode";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair", display: "swap" });
@@ -40,6 +41,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <body>
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
+          {isTestPayments() && (
+            <div className="bg-primary text-primary-foreground px-4 py-1 text-center text-xs font-medium tracking-wide">
+              MODE TEST · les paiements sont simulés, aucun argent réel
+            </div>
+          )}
           {children}
           <Toaster richColors position="top-center" />
         </ThemeProvider>

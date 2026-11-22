@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CreditCard, Loader2, Smartphone } from "lucide-react";
+import { CreditCard, FlaskConical, Loader2, Smartphone } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,10 +21,11 @@ interface Props {
   usd: number;
   cdf: number;
   userName: string;
+  testMode?: boolean;
 }
 
 export function CheckoutForm(p: Props) {
-  const [method, setMethod] = useState<"mobile" | "card">("mobile");
+  const [method, setMethod] = useState<"mobile" | "card" | "test">(p.testMode ? "test" : "mobile");
   const [currency, setCurrency] = useState<Currency>("USD");
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
@@ -76,7 +77,7 @@ export function CheckoutForm(p: Props) {
       <Card>
         <CardHeader>
           <CardTitle>Paiement</CardTitle>
-          <CardDescription>Sécurisé par FlexPay. Vous personnalisez votre invitation juste après.</CardDescription>
+          <CardDescription>{p.testMode ? "Mode test : aucun paiement réel ne sera effectué." : "Sécurisé par FlexPay. Vous personnalisez votre invitation juste après."}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="space-y-2">
@@ -91,6 +92,13 @@ export function CheckoutForm(p: Props) {
             </div>
           </div>
 
+          {p.testMode ? (
+            <div className="bg-accent/30 flex items-start gap-3 rounded-lg border p-3 text-sm">
+              <FlaskConical className="text-primary mt-0.5 size-4 shrink-0" />
+              <p>Vous allez accéder à un écran de paiement simulé. Vous choisirez vous-même le résultat (réussi ou échoué).</p>
+            </div>
+          ) : (
+            <>
           <div className="space-y-2">
             <Label>Moyen de paiement</Label>
             <div className="flex gap-2">
@@ -123,6 +131,9 @@ export function CheckoutForm(p: Props) {
             <p className="text-muted-foreground text-sm">Vous serez redirigé vers la page de paiement sécurisée pour saisir votre carte.</p>
           )}
 
+            </>
+          )}
+
           {error && (
             <p role="alert" className="text-destructive text-sm">
               {error}
@@ -130,7 +141,7 @@ export function CheckoutForm(p: Props) {
           )}
           <Button type="submit" size="lg" className="w-full" disabled={loading}>
             {loading && <Loader2 className="animate-spin" />}
-            Payer {formatMoney(amount, currency)}
+            {p.testMode ? "Continuer vers le paiement simulé" : `Payer ${formatMoney(amount, currency)}`}
           </Button>
         </CardContent>
       </Card>

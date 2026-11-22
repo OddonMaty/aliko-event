@@ -20,7 +20,7 @@ CREATE TABLE orders (
   amount_usd_cents integer NOT NULL CHECK (amount_usd_cents > 0),
   currency text NOT NULL CHECK (currency IN ('USD','CDF')),
   amount integer NOT NULL CHECK (amount > 0),            -- cents si USD, francs si CDF
-  payment_method text NOT NULL CHECK (payment_method IN ('mobile','card')),
+  payment_method text NOT NULL CHECK (payment_method IN ('mobile','card','test')),
   phone text,
   reference text NOT NULL UNIQUE,
   flexpay_order_number text UNIQUE,

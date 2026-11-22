@@ -8,6 +8,7 @@ import { requireUser } from "@/lib/auth";
 import { getCategory, isTier, priceUsdCents, TIER_INFO } from "@/lib/catalog";
 import { toMinorAmount } from "@/lib/money";
 import { getTemplate } from "@/lib/templates";
+import { isTestPayments } from "@/lib/testmode";
 
 export const metadata: Metadata = { title: "Paiement", robots: { index: false } };
 
@@ -39,6 +40,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
           usd={toMinorAmount(usdCents, "USD")}
           cdf={toMinorAmount(usdCents, "CDF")}
           userName={user.name}
+          testMode={isTestPayments()}
         />
       </main>
       <SiteFooter />
