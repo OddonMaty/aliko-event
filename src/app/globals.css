@@ -73,7 +73,18 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-serif: var(--font-playfair), ui-serif, Georgia, serif;
+  --font-serif: var(--font-cormorant), ui-serif, Georgia, serif;
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from { height: 0; }
+    to { height: var(--radix-accordion-content-height); }
+  }
+  @keyframes accordion-up {
+    from { height: var(--radix-accordion-content-height); }
+    to { height: 0; }
+  }
 }
 
 @layer base {
@@ -89,7 +100,7 @@
   h1,
   h2,
   h3 {
-    @apply font-serif tracking-tight;
+    @apply font-serif font-semibold tracking-tight;
   }
 }
 
@@ -98,3 +109,23 @@
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--primary), transparent);
 }
+
+/* Animations des surfaces superposées (Sheet, menu) — réponse à une action, courtes. */
+@keyframes aliko-fade { from { opacity: 0; } }
+@keyframes aliko-slide-in { from { transform: translateX(100%); } }
+@keyframes aliko-slide-out { to { transform: translateX(100%); } }
+@keyframes aliko-pop { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+
+[data-slot="sheet-overlay"][data-state="open"] { animation: aliko-fade 0.2s ease-out; }
+[data-slot="sheet-content"][data-state="open"] { animation: aliko-slide-in 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+[data-slot="sheet-content"][data-state="closed"] { animation: aliko-slide-out 0.2s ease-in forwards; }
+[data-slot="dropdown-menu-content"][data-state="open"] { animation: aliko-pop 0.15s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="sheet-overlay"],
+  [data-slot="sheet-content"],
+  [data-slot="dropdown-menu-content"] { animation: none !important; }
+}
+
+/* Chiffres d'étape en Cormorant : chiffres alignés sur la ligne de base */
+.numeral { font-variant-numeric: lining-nums; }

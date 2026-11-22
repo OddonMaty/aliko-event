@@ -1,21 +1,25 @@
 import Link from "next/link";
-import { Check, LayoutTemplate, Link2, QrCode, ShieldCheck, Smartphone, Wallet } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
-import { CategoryIcon } from "@/components/category-icon";
+import { InvitationCover } from "@/components/invitation/invitation-view";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { TemplateCard } from "@/components/template-card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { CATEGORIES, minPriceForTier, TIERS, TIER_INFO } from "@/lib/catalog";
+import { sampleContent } from "@/lib/content";
 import { formatUsdCents } from "@/lib/money";
-import { TEMPLATES } from "@/lib/templates";
+import { getTemplate, TEMPLATES, templatesForCategory } from "@/lib/templates";
 
 const STEPS = [
-  { icon: LayoutTemplate, title: "Choisissez", text: "Votre type d'événement, puis le design qui vous plaît." },
-  { icon: Wallet, title: "Achetez", text: "Un paiement unique par Mobile Money ou carte. Pas d'abonnement." },
-  { icon: Smartphone, title: "Personnalisez", text: "Ajoutez vos textes, vos photos, le lieu et le programme." },
-  { icon: Link2, title: "Partagez", text: "Recevez votre lien et votre QR code, envoyez-les à vos invités." },
+  { title: "Choisissez", text: "Le type d'événement, puis le design qui vous ressemble." },
+  { title: "Payez une fois", text: "Par Mobile Money ou par carte. Aucun abonnement." },
+  { title: "Personnalisez", text: "Vos textes, vos photos, le lieu et le programme de la journée." },
+  { title: "Partagez", text: "Vous recevez un lien et un QR code. Chaque invité peut avoir le sien." },
 ];
 
 const FAQ = [
@@ -23,153 +27,205 @@ const FAQ = [
   { q: "Comment payer ?", a: "Par Mobile Money (M-Pesa, Airtel Money ou Orange Money) ou par carte bancaire, en dollars ou en francs congolais." },
   { q: "Mes invités doivent-ils créer un compte ?", a: "Non. Ils ouvrent le lien, voient l'invitation et confirment leur présence en quelques secondes." },
   { q: "Puis-je modifier mon invitation après l'avoir publiée ?", a: "Oui. Vos modifications apparaissent immédiatement sur le même lien, sans le renvoyer." },
-  { q: "Mon invitation est-elle protégée ?", a: "Votre lien est unique et impossible à deviner, non référencé par les moteurs de recherche, et les réponses de vos invités ne sont visibles que par vous." },
+  { q: "Mon invitation est-elle protégée ?", a: "Votre lien est unique et impossible à deviner, les moteurs de recherche ne le référencent pas, et seul vous voyez les réponses de vos invités." },
   { q: "Combien de temps reste-t-elle en ligne ?", a: "Jusqu'à 30 jours après la date de votre événement." },
+];
+
+const TRUST = [
+  { title: "Paiement vérifié", text: "Votre invitation n'est activée qu'une fois le paiement confirmé par FlexPay." },
+  { title: "Lien impossible à deviner", text: "Personne ne peut tomber sur votre invitation par hasard, ni la retrouver sur Google." },
+  { title: "Réponses privées", text: "Vous seul voyez qui vient. Les réponses sont supprimées après l'événement." },
 ];
 
 export default function HomePage() {
   const featured = TEMPLATES.slice(0, 6);
+  const heroTemplate = getTemplate("recit-nuit") ?? TEMPLATES[0];
+  const heroContent = sampleContent("mariage");
   return (
     <>
       <SiteHeader />
       <main>
-        {/* Hero */}
-        <section className="mx-auto max-w-4xl px-4 pt-20 pb-16 text-center">
-          <p className="text-primary mb-5 text-xs font-medium tracking-[0.3em] uppercase">Invitations numériques</p>
-          <h1 className="text-4xl leading-[1.1] font-semibold text-balance sm:text-6xl">
-            Des invitations élégantes, prêtes en quelques minutes.
-          </h1>
-          <p className="text-muted-foreground mx-auto mt-6 max-w-2xl text-lg text-balance">
-            Choisissez un design, personnalisez-le, recevez votre lien et votre QR code. Mariage, anniversaire, baby shower, conférence…
-          </p>
-          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button asChild size="lg">
-              <Link href="/modeles">Voir les modèles</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link href="#comment">Comment ça marche</Link>
-            </Button>
+        {/* Hero : l'invitation elle-même, sur un téléphone */}
+        <section className="mx-auto grid max-w-6xl items-center gap-12 px-5 pt-14 pb-20 lg:grid-cols-[1.15fr_0.85fr] lg:pt-20 lg:pb-28">
+          <div>
+            <h1 className="max-w-[14ch] text-[3.4rem] leading-[0.98] text-balance sm:text-7xl lg:text-[5.5rem]">
+              Une invitation qui s'ouvre sur le téléphone de chaque invité.
+            </h1>
+            <p className="text-muted-foreground mt-7 max-w-md text-lg leading-relaxed">
+              Choisissez un design, ajoutez vos photos, le lieu et le programme. Vous recevez un lien et un QR code à partager, et vos invités répondent d'un geste.
+            </p>
+            <div className="mt-9 flex flex-wrap items-center gap-3">
+              <Button asChild size="lg">
+                <Link href="/modeles">Voir les modèles</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link href="#comment">Comment ça marche</Link>
+              </Button>
+            </div>
+            <p className="text-muted-foreground mt-6 text-sm">
+              Paiement unique dès {formatUsdCents(minPriceForTier("essentiel"))}, sans abonnement.
+            </p>
           </div>
-          <div className="gold-rule mx-auto mt-16 max-w-md" />
-        </section>
 
-        {/* Catégories */}
-        <section className="mx-auto max-w-6xl px-4 py-10">
-          <h2 className="mb-8 text-center text-2xl font-semibold sm:text-3xl">Pour chaque événement</h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-            {CATEGORIES.map((c) => (
-              <Link
-                key={c.id}
-                href={`/modeles?categorie=${c.id}`}
-                className="bg-card hover:border-primary/60 group flex flex-col items-center gap-3 rounded-xl border p-5 text-center transition-colors"
-              >
-                <CategoryIcon name={c.icon} className="text-primary size-6" />
-                <span className="text-sm font-medium">{c.label}</span>
+          <div className="mx-auto w-full max-w-[320px]">
+            <div className="relative">
+              <div className="border-primary/40 absolute -top-4 -right-4 h-full w-full rounded-[2.4rem] border" aria-hidden />
+              <div className="bg-background relative overflow-hidden rounded-[2.2rem] border-[7px] border-[#26231d] shadow-2xl">
+                <div className="pointer-events-none h-[470px] overflow-hidden" aria-hidden>
+                  <div className="w-[125%] origin-top-left scale-[0.8]">
+                    <InvitationCover content={heroContent} template={heroTemplate} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p className="text-muted-foreground mt-7 text-center text-sm">
+              Modèle{" "}
+              <Link href={`/modeles/${heroTemplate.id}`} className="text-foreground underline-offset-4 hover:underline">
+                {heroTemplate.name}
               </Link>
-            ))}
+              , avec un texte d'exemple.
+            </p>
           </div>
         </section>
 
-        {/* Modèles */}
-        <section className="mx-auto max-w-6xl px-4 py-16">
-          <div className="mb-8 flex items-end justify-between">
-            <h2 className="text-2xl font-semibold sm:text-3xl">Nos designs</h2>
-            <Button asChild variant="link">
-              <Link href="/modeles">Tout voir →</Link>
+        <Separator />
+
+        {/* Événements : index */}
+        <section className="mx-auto grid max-w-6xl gap-10 px-5 py-20 lg:grid-cols-[1fr_2fr] lg:py-28">
+          <div className="lg:sticky lg:top-28 lg:self-start">
+            <h2 className="text-4xl sm:text-5xl">Pour quel événement ?</h2>
+            <p className="text-muted-foreground mt-4 max-w-xs">
+              Chaque type d'événement a ses textes d'exemple, ses designs et son tarif.
+            </p>
+          </div>
+          <ul className="border-t">
+            {CATEGORIES.map((c) => {
+              const n = templatesForCategory(c.id).length;
+              return (
+                <li key={c.id} className="border-b">
+                  <Link
+                    href={`/modeles?categorie=${c.id}`}
+                    className="group hover:bg-accent/40 focus-visible:bg-accent/40 flex items-center gap-4 px-1 py-5 outline-none transition-colors sm:px-3"
+                  >
+                    <span className="group-hover:text-primary font-serif text-3xl transition-colors sm:text-4xl">{c.label}</span>
+                    <span className="text-muted-foreground ml-auto text-sm">
+                      {n} {n > 1 ? "modèles" : "modèle"}
+                    </span>
+                    <ChevronRight className="text-muted-foreground group-hover:text-primary size-5 shrink-0 transition-transform group-hover:translate-x-1" />
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+
+        <Separator />
+
+        {/* Designs */}
+        <section className="mx-auto max-w-6xl px-5 py-20 lg:py-28">
+          <div className="mb-12 flex flex-wrap items-end justify-between gap-4">
+            <h2 className="text-4xl sm:text-5xl">Nos designs</h2>
+            <Button asChild variant="outline">
+              <Link href="/modeles">Voir tous les modèles</Link>
             </Button>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
             {featured.map((t) => (
               <TemplateCard key={t.id} template={t} />
             ))}
           </div>
         </section>
 
-        {/* Étapes */}
-        <section id="comment" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16">
-          <h2 className="mb-10 text-center text-2xl font-semibold sm:text-3xl">Simple comme 1, 2, 3, 4</h2>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <Separator />
+
+        {/* Étapes : une vraie séquence */}
+        <section id="comment" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-20 lg:py-28">
+          <h2 className="max-w-xl text-4xl sm:text-5xl">De l'idée au lien partagé, en quatre étapes.</h2>
+          <ol className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((s, i) => (
-              <div key={s.title} className="space-y-3 text-center">
-                <div className="bg-accent text-primary mx-auto flex size-12 items-center justify-center rounded-full">
-                  <s.icon className="size-5" />
-                </div>
-                <p className="text-muted-foreground text-xs tracking-widest">ÉTAPE {i + 1}</p>
-                <h3 className="text-lg font-semibold">{s.title}</h3>
-                <p className="text-muted-foreground text-sm">{s.text}</p>
-              </div>
+              <li key={s.title} className="border-t pt-5">
+                <span className="numeral text-primary font-serif text-6xl leading-none">{i + 1}</span>
+                <h3 className="mt-5 font-serif text-2xl">{s.title}</h3>
+                <p className="text-muted-foreground mt-2 text-sm leading-relaxed">{s.text}</p>
+              </li>
             ))}
-          </div>
+          </ol>
         </section>
 
+        <Separator />
+
         {/* Tarifs */}
-        <section id="tarifs" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16">
-          <h2 className="mb-3 text-center text-2xl font-semibold sm:text-3xl">Des tarifs clairs, sans abonnement</h2>
-          <p className="text-muted-foreground mx-auto mb-10 max-w-xl text-center">
-            Le prix dépend de l'événement et de la formule. Paiement unique en USD ou en CDF.
-          </p>
+        <section id="tarifs" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-20 lg:py-28">
+          <div className="mb-12 max-w-xl">
+            <h2 className="text-4xl sm:text-5xl">Un prix, payé une seule fois.</h2>
+            <p className="text-muted-foreground mt-4">
+              Le tarif dépend du type d'événement et de la formule. Vous payez en dollars ou en francs congolais.
+            </p>
+          </div>
           <div className="grid gap-6 md:grid-cols-3">
             {TIERS.map((t) => {
               const info = TIER_INFO[t];
+              const highlighted = t === "standard";
               return (
-                <Card key={t} className={t === "standard" ? "border-primary/60 shadow-md" : ""}>
+                <Card key={t} className={highlighted ? "border-primary shadow-none" : "shadow-none"}>
                   <CardHeader>
-                    <CardTitle className="text-xl">{info.label}</CardTitle>
+                    <div className="flex items-center justify-between gap-2">
+                      <CardTitle className="font-serif text-3xl">{info.label}</CardTitle>
+                      {highlighted && <Badge>Le plus choisi</Badge>}
+                    </div>
                     <CardDescription>{info.blurb}</CardDescription>
-                    <p className="text-primary pt-3 font-serif text-3xl font-semibold">
-                      <span className="text-muted-foreground mr-1 text-sm font-sans font-normal">dès</span>
-                      {formatUsdCents(minPriceForTier(t))}
+                    <p className="pt-4">
+                      <span className="text-muted-foreground mr-1.5 text-sm">dès</span>
+                      <span className="numeral font-serif text-5xl">{formatUsdCents(minPriceForTier(t))}</span>
                     </p>
                   </CardHeader>
                   <CardContent>
-                    <ul className="space-y-2.5 text-sm">
+                    <ul className="divide-y text-sm">
                       {info.features.map((f) => (
-                        <li key={f} className="flex items-start gap-2">
-                          <Check className="text-primary mt-0.5 size-4 shrink-0" />
+                        <li key={f} className="py-2.5">
                           {f}
                         </li>
                       ))}
                     </ul>
                   </CardContent>
+                  <CardFooter>
+                    <Button asChild variant={highlighted ? "default" : "outline"} className="w-full">
+                      <Link href="/modeles">Choisir un modèle</Link>
+                    </Button>
+                  </CardFooter>
                 </Card>
               );
             })}
           </div>
         </section>
 
+        <Separator />
+
         {/* Confiance */}
-        <section className="mx-auto max-w-6xl px-4 py-16">
-          <div className="grid gap-6 md:grid-cols-3">
-            {[
-              { icon: ShieldCheck, title: "Paiement sécurisé", text: "Mobile Money et carte via FlexPay. Votre invitation est activée uniquement après confirmation du paiement." },
-              { icon: QrCode, title: "Lien et QR uniques", text: "Un lien impossible à deviner et un QR code généré automatiquement, à imprimer ou à partager." },
-              { icon: Link2, title: "Vos invités, vos données", text: "Seul vous voyez les réponses. Elles sont supprimées après l'événement." },
-            ].map((b) => (
-              <div key={b.title} className="flex gap-4">
-                <b.icon className="text-primary mt-1 size-6 shrink-0" />
-                <div>
-                  <h3 className="font-semibold">{b.title}</h3>
-                  <p className="text-muted-foreground mt-1 text-sm">{b.text}</p>
-                </div>
+        <section className="mx-auto max-w-6xl px-5 py-20 lg:py-24">
+          <div className="grid gap-10 md:grid-cols-3">
+            {TRUST.map((b) => (
+              <div key={b.title}>
+                <h3 className="font-serif text-2xl">{b.title}</h3>
+                <p className="text-muted-foreground mt-2 max-w-xs text-sm leading-relaxed">{b.text}</p>
               </div>
             ))}
           </div>
         </section>
 
+        <Separator />
+
         {/* FAQ */}
-        <section id="faq" className="mx-auto max-w-3xl scroll-mt-20 px-4 py-16">
-          <h2 className="mb-8 text-center text-2xl font-semibold sm:text-3xl">Questions fréquentes</h2>
-          <div className="divide-y rounded-xl border">
+        <section id="faq" className="mx-auto grid max-w-6xl scroll-mt-20 gap-10 px-5 py-20 lg:grid-cols-[1fr_2fr] lg:py-28">
+          <h2 className="text-4xl sm:text-5xl">Questions fréquentes</h2>
+          <Accordion type="single" collapsible className="border-t">
             {FAQ.map((f) => (
-              <details key={f.q} className="group p-5">
-                <summary className="flex cursor-pointer list-none items-center justify-between font-medium">
-                  {f.q}
-                  <span className="text-primary transition-transform group-open:rotate-45">+</span>
-                </summary>
-                <p className="text-muted-foreground mt-3 text-sm">{f.a}</p>
-              </details>
+              <AccordionItem key={f.q} value={f.q}>
+                <AccordionTrigger>{f.q}</AccordionTrigger>
+                <AccordionContent>{f.a}</AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
+          </Accordion>
         </section>
       </main>
       <SiteFooter />

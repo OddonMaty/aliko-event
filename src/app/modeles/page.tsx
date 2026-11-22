@@ -21,9 +21,9 @@ export default async function GalleryPage({ searchParams }: { searchParams: Prom
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-6xl px-4 py-12">
+      <main className="mx-auto max-w-6xl px-5 py-14">
         <div className="mb-8 max-w-2xl">
-          <h1 className="text-3xl font-semibold sm:text-4xl">
+          <h1 className="text-5xl sm:text-6xl">
             {category ? category.label : "Tous nos modèles"}
           </h1>
           <p className="text-muted-foreground mt-3">
@@ -42,7 +42,7 @@ export default async function GalleryPage({ searchParams }: { searchParams: Prom
           ))}
         </div>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((t) => (
             <TemplateCard key={t.id} template={t} category={category?.id as CategoryId | undefined} />
           ))}
