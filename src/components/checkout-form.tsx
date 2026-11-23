@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { CreditCard, FlaskConical, Loader2, Smartphone } from "lucide-react";
 
@@ -31,6 +32,7 @@ export function CheckoutForm(p: Props) {
   const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [accepted, setAccepted] = useState(false);
 
   const amount = currency === "USD" ? p.usd : p.cdf;
 
@@ -141,7 +143,27 @@ export function CheckoutForm(p: Props) {
               {error}
             </p>
           )}
-          <Button type="submit" size="lg" className="w-full" disabled={loading}>
+          <label className="flex items-start gap-3 text-sm">
+            <input
+              type="checkbox"
+              className="accent-primary mt-0.5 size-4 shrink-0"
+              checked={accepted}
+              onChange={(e) => setAccepted(e.target.checked)}
+              required
+            />
+            <span>
+              J&apos;ai lu et j&apos;accepte les{" "}
+              <Link href="/cgu" target="_blank" className="text-primary underline-offset-4 hover:underline">
+                conditions d&apos;utilisation
+              </Link>{" "}
+              et la{" "}
+              <Link href="/remboursement" target="_blank" className="text-primary underline-offset-4 hover:underline">
+                politique de remboursement
+              </Link>
+              .
+            </span>
+          </label>
+          <Button type="submit" size="lg" className="w-full" disabled={loading || !accepted}>
             {loading && <Loader2 className="animate-spin" />}
             {p.testMode ? "Continuer vers le paiement simulé" : `Payer ${formatMoney(amount, currency)}`}
           </Button>

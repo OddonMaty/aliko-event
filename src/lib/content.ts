@@ -130,7 +130,7 @@ export function enforceTierLimits(content: InvitationContent, tier: Tier): void 
 
 export const RESERVED_SLUGS = new Set([
   "admin", "api", "app", "aide", "contact", "connexion", "inscription", "modeles", "tarifs", "i", "www",
-  "tableau-de-bord", "acheter", "aliko", "aliko-event", "support", "paiement", "login", "register",
+  "tableau-de-bord", "acheter", "cgu", "confidentialite", "remboursement", "cookies", "aliko", "aliko-event", "support", "paiement", "login", "register",
 ]);
 
 export const customSlugSchema = z

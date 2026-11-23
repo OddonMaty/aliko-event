@@ -3,6 +3,7 @@ import { Inter, Playfair_Display, Cormorant_Garamond, Montserrat } from "next/fo
 
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
+import { CookieNotice } from "@/components/cookie-notice";
 import { Toaster } from "@/components/ui/sonner";
 import { isTestPayments } from "@/lib/testmode";
 
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           )}
           {children}
+          <CookieNotice />
           <Toaster richColors position="top-center" />
         </ThemeProvider>
       </body>

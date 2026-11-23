@@ -88,6 +88,19 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
               {error}
             </p>
           )}
+          {isRegister && (
+            <p className="text-muted-foreground text-xs leading-relaxed">
+              En créant un compte, vous acceptez les{" "}
+              <Link href="/cgu" className="text-primary underline-offset-4 hover:underline">
+                conditions d&apos;utilisation
+              </Link>{" "}
+              et la{" "}
+              <Link href="/confidentialite" className="text-primary underline-offset-4 hover:underline">
+                politique de confidentialité
+              </Link>
+              .
+            </p>
+          )}
           <Button type="submit" className="w-full" disabled={loading}>
             {loading && <Loader2 className="animate-spin" />}
             {isRegister ? "Créer mon compte" : "Se connecter"}

@@ -4,6 +4,7 @@ import { CalendarDays, Clock, MapPin, Navigation, Phone, Shirt } from "lucide-re
 import { isAllowedImageUrl, isAllowedMapUrl, type InvitationContent } from "@/lib/content";
 import type { Template } from "@/lib/templates";
 import { Countdown } from "./countdown";
+import { MapEmbed } from "./map-embed";
 import { formatDateFr } from "@/lib/utils";
 
 type Palette = Template["palette"];
@@ -442,17 +443,7 @@ function Location({ c, t }: { c: InvitationContent; t: Template }) {
             {c.address}
           </p>
         )}
-        {embed && (
-          <div className="mt-5 overflow-hidden rounded-xl" style={{ border: `1px solid ${p.accent}55` }}>
-            <iframe
-              src={embed}
-              title="Carte du lieu"
-              loading="lazy"
-              referrerPolicy="no-referrer"
-              className="block h-60 w-full border-0"
-            />
-          </div>
-        )}
+        {embed && <MapEmbed src={embed} accent={p.accent} fg={p.fg} bg={p.bg} />}
         {(mapOk || embed) && (
           <a
             href={mapOk ? c.mapUrl : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`}

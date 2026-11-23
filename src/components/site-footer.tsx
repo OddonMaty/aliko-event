@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { Brand } from "@/components/brand";
 import { Separator } from "@/components/ui/separator";
+import { LEGAL_LINKS } from "@/lib/legal";
 
 export function SiteFooter() {
   return (
@@ -28,9 +29,16 @@ export function SiteFooter() {
         </nav>
       </div>
       <Separator />
-      <p className="text-muted-foreground py-5 text-center text-xs">
-        © {new Date().getFullYear()} Aliko Event
-      </p>
+      <div className="text-muted-foreground mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 py-5 text-xs md:flex-row">
+        <p>© {new Date().getFullYear()} Aliko Event</p>
+        <nav aria-label="Informations légales" className="flex flex-wrap justify-center gap-x-5 gap-y-1">
+          {LEGAL_LINKS.map((l) => (
+            <Link key={l.href} href={l.href} className="hover:text-foreground">
+              {l.label}
+            </Link>
+          ))}
+        </nav>
+      </div>
     </footer>
   );
 }
