@@ -2,7 +2,7 @@ import { randomBytes, randomUUID } from "node:crypto";
 import { z } from "zod";
 
 import { requireApiUser } from "@/lib/auth";
-import { CATEGORY_IDS, getCategory, priceUsdCents, TIERS, TIER_INFO } from "@/lib/catalog";
+import { CATEGORY_IDS, getCategory, isGuestLimit, priceUsdCents, TIERS, TIER_INFO } from "@/lib/catalog";
 import { sampleContent } from "@/lib/content";
 import { getSql, q } from "@/lib/db";
 import { FlexpayError, normalizeDrcPhone, requestCardPayment, requestMobilePayment } from "@/lib/flexpay";
@@ -17,6 +17,7 @@ const schema = z.object({
   templateId: z.string().max(50),
   category: z.enum(CATEGORY_IDS),
   tier: z.enum(TIERS),
+  guests: z.number().int().refine(isGuestLimit, "Nombre d'invités non proposé").default(50),
   method: z.enum(["mobile", "card", "test"]),
   currency: z.enum(["USD", "CDF"]),
   phone: z.string().max(30).optional().default(""),
@@ -34,7 +35,7 @@ export const POST = handle(async (req) => {
   const category = getCategory(body.category)!;
 
   // Le prix est TOUJOURS calculé côté serveur (jamais envoyé par le navigateur).
-  const usdCents = priceUsdCents(body.category, body.tier);
+  const usdCents = priceUsdCents(body.category, body.tier, body.guests);
   const amount = toMinorAmount(usdCents, body.currency);
 
   let phone: string | null = null;
@@ -51,12 +52,12 @@ export const POST = handle(async (req) => {
 
   const sql = getSql();
   await sql.transaction([
-    sql`INSERT INTO orders (id, user_id, template_id, category, tier, amount_usd_cents, currency, amount, payment_method, phone, reference)
-        VALUES (${orderId}, ${user.id}, ${body.templateId}, ${body.category}, ${body.tier}, ${usdCents}, ${body.currency}, ${amount}, ${body.method}, ${phone}, ${reference})`,
-    sql`INSERT INTO invitations (id, order_id, user_id, slug, template_id, category, tier, status, content)
-        VALUES (${invitationId}, ${orderId}, ${user.id}, ${slug}, ${body.templateId}, ${body.category}, ${body.tier}, 'awaiting_payment', ${content}::jsonb)`,
+    sql`INSERT INTO orders (id, user_id, template_id, category, tier, guest_limit, amount_usd_cents, currency, amount, payment_method, phone, reference)
+        VALUES (${orderId}, ${user.id}, ${body.templateId}, ${body.category}, ${body.tier}, ${body.guests}, ${usdCents}, ${body.currency}, ${amount}, ${body.method}, ${phone}, ${reference})`,
+    sql`INSERT INTO invitations (id, order_id, user_id, slug, template_id, category, tier, guest_limit, status, content)
+        VALUES (${invitationId}, ${orderId}, ${user.id}, ${slug}, ${body.templateId}, ${body.category}, ${body.tier}, ${body.guests}, 'awaiting_payment', ${content}::jsonb)`,
   ]);
-  await audit(user.id, "order.created", "order", orderId, { tier: body.tier, category: body.category, currency: body.currency });
+  await audit(user.id, "order.created", "order", orderId, { tier: body.tier, category: body.category, guests: body.guests, currency: body.currency });
 
   if (body.method === "test") return json({ orderId, next: `/acheter/simulation?order=${orderId}` });
 
@@ -77,7 +78,7 @@ export const POST = handle(async (req) => {
       reference,
       amount: flexAmount,
       currency: body.currency,
-      description: `Invitation ${category.label} (${TIER_INFO[body.tier].label}) - Aliko Event`,
+      description: `Invitation ${category.label} (${TIER_INFO[body.tier].label}, ${body.guests} invités) - Aliko Event`,
       callbackUrl,
       approveUrl: returnUrl,
       cancelUrl: `${returnUrl}&r=cancel`,

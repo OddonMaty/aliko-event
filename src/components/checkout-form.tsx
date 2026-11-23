@@ -18,6 +18,7 @@ interface Props {
   categoryLabel: string;
   tier: string;
   tierLabel: string;
+  guests: number;
   usd: number;
   cdf: number;
   userName: string;
@@ -41,7 +42,7 @@ export function CheckoutForm(p: Props) {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ templateId: p.templateId, category: p.category, tier: p.tier, method, currency, phone }),
+        body: JSON.stringify({ templateId: p.templateId, category: p.category, tier: p.tier, guests: p.guests, method, currency, phone }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error ?? "Paiement impossible");
@@ -66,6 +67,7 @@ export function CheckoutForm(p: Props) {
           <div className="flex justify-between"><span className="text-muted-foreground">Design</span><span>{p.templateName}</span></div>
           <div className="flex justify-between"><span className="text-muted-foreground">Événement</span><span>{p.categoryLabel}</span></div>
           <div className="flex justify-between"><span className="text-muted-foreground">Formule</span><span>{p.tierLabel}</span></div>
+          <div className="flex justify-between"><span className="text-muted-foreground">Invités</span><span>Jusqu&apos;à {p.guests}</span></div>
           <Separator />
           <div className="flex justify-between text-base font-semibold">
             <span>Total</span>

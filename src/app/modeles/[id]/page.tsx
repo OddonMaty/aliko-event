@@ -52,7 +52,7 @@ export default async function TemplatePage({ params, searchParams }: Props) {
             <PurchasePanel
               templateId={template.id}
               initialCategory={initial.id}
-              categories={categories.map((c) => ({ id: c.id, label: c.label, prices: c.prices }))}
+              categories={categories.map((c) => ({ id: c.id, label: c.label, prices: c.prices, extraGuestCents: c.extraGuestCents }))}
             />
           </div>
         </div>

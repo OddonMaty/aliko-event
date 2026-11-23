@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
-import { TIERS, TIER_INFO, type Category, type Tier } from "@/lib/catalog";
+import { BASE_GUESTS, GUEST_LIMITS, guestExtraCents, TIERS, TIER_INFO, type Category, type GuestLimit, type Tier } from "@/lib/catalog";
 import { formatUsdCents } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -19,13 +19,16 @@ export function PurchasePanel({
   initialCategory,
 }: {
   templateId: string;
-  categories: Pick<Category, "id" | "label" | "prices">[];
+  categories: Pick<Category, "id" | "label" | "prices" | "extraGuestCents">[];
   initialCategory: string;
 }) {
   const [category, setCategory] = useState(initialCategory);
   const [tier, setTier] = useState<Tier>("standard");
+  const [guests, setGuests] = useState<GuestLimit>(BASE_GUESTS);
   const current = categories.find((c) => c.id === category) ?? categories[0];
-  const price = current.prices[tier];
+  const extra = guestExtraCents(current.extraGuestCents, guests);
+  const priceOf = (t: Tier) => current.prices[t] + extra;
+  const price = priceOf(tier);
 
   return (
     <Card>
@@ -46,6 +49,22 @@ export function PurchasePanel({
             </NativeSelect>
           </div>
         )}
+
+        <div className="space-y-2">
+          <Label htmlFor="guests">Nombre d&apos;invités</Label>
+          <NativeSelect id="guests" value={guests} onChange={(e) => setGuests(Number(e.target.value) as GuestLimit)}>
+            {GUEST_LIMITS.map((n) => (
+              <option key={n} value={n}>
+                Jusqu&apos;à {n} invités
+              </option>
+            ))}
+          </NativeSelect>
+          <p className="text-muted-foreground text-xs">
+            {extra > 0
+              ? `Inclut ${formatUsdCents(extra)} pour les invités au-delà de ${BASE_GUESTS}.`
+              : `${BASE_GUESTS} invités inclus. Au-delà : ${formatUsdCents(current.extraGuestCents)} par invité en plus.`}
+          </p>
+        </div>
 
         <div className="space-y-2" role="radiogroup" aria-label="Formule">
           {TIERS.map((t) => {
@@ -68,7 +87,7 @@ export function PurchasePanel({
                     {info.label}
                     {t === "standard" && <Badge variant="secondary">Populaire</Badge>}
                   </span>
-                  <span className="text-primary font-serif text-lg font-semibold">{formatUsdCents(current.prices[t])}</span>
+                  <span className="text-primary font-serif text-lg font-semibold">{formatUsdCents(priceOf(t))}</span>
                 </div>
                 <p className="text-muted-foreground mt-1 text-xs">{info.blurb}</p>
                 {active && (
@@ -93,7 +112,7 @@ export function PurchasePanel({
         </div>
 
         <Button asChild size="lg" className="w-full">
-          <Link href={`/acheter?modele=${templateId}&categorie=${current.id}&palier=${tier}`}>
+          <Link href={`/acheter?modele=${templateId}&categorie=${current.id}&palier=${tier}&invites=${guests}`}>
             Acheter ce design · {formatUsdCents(price)}
           </Link>
         </Button>

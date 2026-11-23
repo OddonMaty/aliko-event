@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, MessageCircle, Plus, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { Loader2, MessageCircle, Plus, ScanLine, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { CopyButton } from "@/components/copy-button";
@@ -17,6 +18,7 @@ export interface GuestItem {
   name: string;
   token: string;
   attendance: "yes" | "no" | "maybe" | null;
+  checkedIn: boolean;
 }
 
 const STATUS: Record<NonNullable<GuestItem["attendance"]> | "none", { label: string; variant: "success" | "destructive" | "secondary" | "outline" }> = {
@@ -33,10 +35,11 @@ interface Props {
   baseUrl: string;
   published: boolean;
   cap: number;
+  scannerHref?: string;
   guests: GuestItem[];
 }
 
-export function GuestManager({ invitationId, slug, title, baseUrl, published, cap, guests }: Props) {
+export function GuestManager({ invitationId, slug, title, baseUrl, published, cap, scannerHref, guests }: Props) {
   const router = useRouter();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -87,7 +90,7 @@ export function GuestManager({ invitationId, slug, title, baseUrl, published, ca
         <CardTitle>Vos invités</CardTitle>
         <CardDescription>
           Ajoutez vos invités : chacun reçoit un lien personnel (son prénom s&apos;affiche dans l&apos;invitation) et un pass QR
-          individuel. {guests.length} / {cap}.
+          individuel. {guests.length} / {cap} invités.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -109,6 +112,19 @@ export function GuestManager({ invitationId, slug, title, baseUrl, published, ca
           <p className="text-muted-foreground text-xs">Les liens personnels fonctionneront une fois l&apos;invitation publiée.</p>
         )}
 
+        {scannerHref && guests.length > 0 && (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3 text-sm">
+            <p>
+              {guests.filter((g) => g.checkedIn).length} / {guests.length} invités entrés.
+            </p>
+            <Button asChild size="sm">
+              <Link href={scannerHref}>
+                <ScanLine /> Scanner les entrées
+              </Link>
+            </Button>
+          </div>
+        )}
+
         {guests.length > 0 && (
           <ul className="divide-y rounded-lg border">
             {guests.map((g) => {
@@ -118,6 +134,7 @@ export function GuestManager({ invitationId, slug, title, baseUrl, published, ca
                   <div className="flex min-w-0 items-center gap-3">
                     <span className="truncate text-sm font-medium">{g.name}</span>
                     <Badge variant={st.variant}>{st.label}</Badge>
+                    {g.checkedIn && <Badge variant="success">Entré(e)</Badge>}
                   </div>
                   <div className="flex items-center gap-1.5">
                     <CopyButton value={linkFor(g)} label="Lien" />

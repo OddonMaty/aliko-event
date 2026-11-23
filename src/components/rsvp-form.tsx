@@ -16,9 +16,11 @@ interface Props {
   guest?: { token: string; name: string };
   /** Réponse déjà enregistrée pour cet invité. */
   answered?: Att | null;
+  /** Boissons proposées par l'organisateur (vide = pas de choix). */
+  drinks?: string[];
 }
 
-export function RsvpForm({ slug, template, deadline, guest, answered = null }: Props) {
+export function RsvpForm({ slug, template, deadline, guest, answered = null, drinks = [] }: Props) {
   const p = template.palette;
   const [attendance, setAttendance] = useState<Att>(answered ?? "yes");
   const [loading, setLoading] = useState(false);
@@ -50,6 +52,7 @@ export function RsvpForm({ slug, template, deadline, guest, answered = null }: P
           attendance,
           partySize: attendance === "no" ? 1 : Number(fd.get("partySize") ?? 1),
           message: fd.get("message") ?? "",
+          drink: attendance === "no" ? "" : String(fd.get("drink") ?? ""),
           turnstile: token,
         }),
       });
@@ -141,6 +144,19 @@ export function RsvpForm({ slug, template, deadline, guest, answered = null }: P
               {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
                 <option key={n} value={n}>
                   {n}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        {attendance !== "no" && drinks.length > 0 && (
+          <label className="flex items-center justify-between gap-3 text-sm">
+            <span>Boisson souhaitée</span>
+            <select name="drink" defaultValue="" className="max-w-[60%] rounded-lg px-3 py-2 text-sm" style={{ ...field, background: p.surface }}>
+              <option value="">Pas de préférence</option>
+              {drinks.map((d) => (
+                <option key={d} value={d}>
+                  {d}
                 </option>
               ))}
             </select>

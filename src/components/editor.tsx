@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Download, EyeOff, Loader2, Plus, Save, Send, Trash2 } from "lucide-react";
+import { Check, Download, EyeOff, Loader2, Plus, Save, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { CopyButton } from "@/components/copy-button";
@@ -18,8 +18,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { TIER_INFO, type Tier } from "@/lib/catalog";
 import type { InvitationContent } from "@/lib/content";
+import { DRINK_PRESETS, MAX_DRINKS } from "@/lib/drinks";
 import type { Template } from "@/lib/templates";
-import { formatDateFr } from "@/lib/utils";
+import { cn, formatDateFr } from "@/lib/utils";
 
 export interface RsvpItem {
   id: string;
@@ -28,6 +29,7 @@ export interface RsvpItem {
   email: string | null;
   attendance: "yes" | "no" | "maybe";
   party_size: number;
+  drink: string | null;
   message: string | null;
   created_at: string;
 }
@@ -40,7 +42,7 @@ export interface MessageItem {
 }
 
 interface Props {
-  invitation: { id: string; slug: string; status: "draft" | "published" | "suspended" | "archived"; tier: Tier };
+  invitation: { id: string; slug: string; status: "draft" | "published" | "suspended" | "archived"; tier: Tier; guestLimit: number };
   template: Template;
   initialContent: InvitationContent;
   rsvps: RsvpItem[];
@@ -68,6 +70,7 @@ function Field({ id, label, hint, children }: { id: string; label: string; hint?
 export function Editor({ invitation, template, initialContent, rsvps, guests, messages, baseUrl }: Props) {
   const router = useRouter();
   const [hiding, setHiding] = useState<string | null>(null);
+  const [customDrink, setCustomDrink] = useState("");
   const info = TIER_INFO[invitation.tier];
   const [content, setContent] = useState<InvitationContent>(initialContent);
   const [slug, setSlug] = useState(invitation.slug);
@@ -140,6 +143,20 @@ export function Editor({ invitation, template, initialContent, rsvps, guests, me
     yes: rsvps.filter((r) => r.attendance === "yes").reduce((n, r) => n + r.party_size, 0),
     no: rsvps.filter((r) => r.attendance === "no").length,
     maybe: rsvps.filter((r) => r.attendance === "maybe").length,
+  };
+
+  const drinkCounts = Object.entries(
+    rsvps
+      .filter((r) => r.attendance !== "no" && r.drink)
+      .reduce<Record<string, number>>((acc, r) => ({ ...acc, [r.drink as string]: (acc[r.drink as string] ?? 0) + r.party_size }), {}),
+  ).sort((a, b) => b[1] - a[1]);
+  const allDrinks = [...DRINK_PRESETS, ...content.drinks.filter((d) => !(DRINK_PRESETS as readonly string[]).includes(d))];
+  const toggleDrink = (d: string) =>
+    set("drinks", content.drinks.includes(d) ? content.drinks.filter((x) => x !== d) : [...content.drinks, d].slice(0, MAX_DRINKS));
+  const addCustomDrink = () => {
+    const d = customDrink.trim().slice(0, 30);
+    if (d && !content.drinks.some((x) => x.toLowerCase() === d.toLowerCase())) set("drinks", [...content.drinks, d].slice(0, MAX_DRINKS));
+    setCustomDrink("");
   };
 
   const preview = <InvitationView content={content} template={template} brand={!info.brandingFree} embedded />;
@@ -230,6 +247,15 @@ export function Editor({ invitation, template, initialContent, rsvps, guests, me
                   <Field id="map" label="Lien de la carte (optionnel)" hint="Google Maps, OpenStreetMap ou Waze uniquement.">
                     <Input id="map" type="url" value={content.mapUrl} maxLength={400} placeholder="https://maps.app.goo.gl/…" onChange={(e) => set("mapUrl", e.target.value)} />
                   </Field>
+                  <label className="flex items-center gap-3 text-sm">
+                    <input
+                      type="checkbox"
+                      className="accent-primary size-4"
+                      checked={content.showMap}
+                      onChange={(e) => set("showMap", e.target.checked)}
+                    />
+                    Afficher la carte du lieu dans l&apos;invitation (d&apos;après le nom et l&apos;adresse)
+                  </label>
                   <Field id="message" label="Message">
                     <Textarea id="message" rows={4} value={content.message} maxLength={600} onChange={(e) => set("message", e.target.value)} />
                   </Field>
@@ -314,6 +340,71 @@ export function Editor({ invitation, template, initialContent, rsvps, guests, me
                     <Field id="deadline" label="Date limite de réponse (optionnel)">
                       <Input id="deadline" type="date" value={content.rsvpDeadline} onChange={(e) => set("rsvpDeadline", e.target.value)} />
                     </Field>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Boissons</CardTitle>
+                  <CardDescription>
+                    Vos invités choisissent leur boisson en confirmant leur présence. Vous voyez le total par boisson dans « Réponses ».
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <label className="flex items-center gap-3 text-sm">
+                    <input
+                      type="checkbox"
+                      className="accent-primary size-4"
+                      checked={content.drinksEnabled}
+                      onChange={(e) => set("drinksEnabled", e.target.checked)}
+                    />
+                    Proposer un choix de boissons à mes invités
+                  </label>
+                  {content.drinksEnabled && (
+                    <>
+                      <div className="flex flex-wrap gap-2" role="group" aria-label="Boissons proposées">
+                        {allDrinks.map((d) => {
+                          const on = content.drinks.includes(d);
+                          return (
+                            <button
+                              key={d}
+                              type="button"
+                              aria-pressed={on}
+                              onClick={() => toggleDrink(d)}
+                              className={cn(
+                                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors",
+                                on ? "border-primary bg-primary text-primary-foreground" : "hover:bg-accent/40",
+                              )}
+                            >
+                              {on && <Check className="size-3.5" />}
+                              {d}
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="flex gap-2">
+                        <Input
+                          value={customDrink}
+                          maxLength={30}
+                          placeholder="Une autre boisson (ex. Jus de tamarin)"
+                          aria-label="Ajouter une boisson"
+                          onChange={(e) => setCustomDrink(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              addCustomDrink();
+                            }
+                          }}
+                        />
+                        <Button type="button" variant="outline" onClick={addCustomDrink} disabled={!customDrink.trim()}>
+                          <Plus /> Ajouter
+                        </Button>
+                      </div>
+                      <p className="text-muted-foreground text-xs">
+                        {content.drinks.length} boisson(s) proposée(s), {MAX_DRINKS} au maximum.
+                      </p>
+                    </>
                   )}
                 </CardContent>
               </Card>
@@ -411,7 +502,8 @@ export function Editor({ invitation, template, initialContent, rsvps, guests, me
               title={content.title}
               baseUrl={baseUrl}
               published={status === "published"}
-              cap={info.maxRsvp}
+              cap={invitation.guestLimit}
+              scannerHref={`/tableau-de-bord/${invitation.id}/scanner`}
               guests={guests}
             />
           </TabsContent>
@@ -435,6 +527,20 @@ export function Editor({ invitation, template, initialContent, rsvps, guests, me
                 )}
               </CardHeader>
               <CardContent>
+                {drinkCounts.length > 0 && (
+                  <div className="mb-4 rounded-lg border p-4">
+                    <p className="mb-2 text-sm font-medium">Boissons demandées (par personne)</p>
+                    <ul className="flex flex-wrap gap-2 text-sm">
+                      {drinkCounts.map(([d, n]) => (
+                        <li key={d}>
+                          <Badge variant="secondary">
+                            {d} · {n}
+                          </Badge>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 {rsvps.length === 0 ? (
                   <p className="text-muted-foreground py-6 text-center text-sm">Aucune réponse pour le moment.</p>
                 ) : (
@@ -450,6 +556,7 @@ export function Editor({ invitation, template, initialContent, rsvps, guests, me
                             {(r.phone || r.email) && " · "}
                             {formatDateFr(r.created_at.slice(0, 10), "long")}
                           </p>
+                          {r.drink && <p className="text-muted-foreground text-xs">Boisson : {r.drink}</p>}
                           {r.message && <p className="mt-1 italic">« {r.message} »</p>}
                         </div>
                         <Badge variant={ATT[r.attendance].variant}>{ATT[r.attendance].label}</Badge>

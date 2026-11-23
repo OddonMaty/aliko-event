@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
 
+import { CategoryIcon } from "@/components/category-icon";
 import { InvitationCover } from "@/components/invitation/invitation-view";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -10,7 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { CATEGORIES, minPriceForTier, TIERS, TIER_INFO } from "@/lib/catalog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { BASE_GUESTS, CATEGORIES, getCategory, minPriceForTier, priceUsdCents, TIERS, TIER_INFO } from "@/lib/catalog";
 import { sampleContent } from "@/lib/content";
 import { formatUsdCents } from "@/lib/money";
 import { getTemplate, TEMPLATES, templatesForCategory } from "@/lib/templates";
@@ -63,7 +64,7 @@ export default function HomePage() {
               </Button>
             </div>
             <p className="text-muted-foreground mt-6 text-sm">
-              Paiement unique dès {formatUsdCents(minPriceForTier("essentiel"))}, sans abonnement.
+              Paiement unique dès {formatUsdCents(minPriceForTier("essentiel"))} pour {BASE_GUESTS} invités, sans abonnement.
             </p>
           </div>
 
@@ -90,33 +91,30 @@ export default function HomePage() {
 
         <Separator />
 
-        {/* Événements : index */}
-        <section className="mx-auto grid max-w-6xl gap-10 px-5 py-20 lg:grid-cols-[1fr_2fr] lg:py-28">
-          <div className="lg:sticky lg:top-28 lg:self-start">
+        {/* Événements : petites cartes avec le nombre de modèles */}
+        <section className="mx-auto max-w-6xl px-5 py-20 lg:py-28">
+          <div className="mb-12 max-w-xl">
             <h2 className="text-4xl sm:text-5xl">Pour quel événement ?</h2>
-            <p className="text-muted-foreground mt-4 max-w-xs">
-              Chaque type d'événement a ses textes d'exemple, ses designs et son tarif.
-            </p>
+            <p className="text-muted-foreground mt-4">Chaque type d&apos;événement a ses textes d&apos;exemple, ses designs et son tarif.</p>
           </div>
-          <ul className="border-t">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
             {CATEGORIES.map((c) => {
               const n = templatesForCategory(c.id).length;
               return (
-                <li key={c.id} className="border-b">
-                  <Link
-                    href={`/modeles?categorie=${c.id}`}
-                    className="group hover:bg-accent/40 focus-visible:bg-accent/40 flex items-center gap-4 px-1 py-5 outline-none transition-colors sm:px-3"
-                  >
-                    <span className="group-hover:text-primary font-serif text-3xl transition-colors sm:text-4xl">{c.label}</span>
-                    <span className="text-muted-foreground ml-auto text-sm">
-                      {n} {n > 1 ? "modèles" : "modèle"}
-                    </span>
-                    <ChevronRight className="text-muted-foreground group-hover:text-primary size-5 shrink-0 transition-transform group-hover:translate-x-1" />
-                  </Link>
-                </li>
+                <Link
+                  key={c.id}
+                  href={`/modeles?categorie=${c.id}`}
+                  className="bg-card hover:border-primary/60 focus-visible:border-primary group flex flex-col items-center gap-3 rounded-xl border p-6 text-center outline-none transition-colors"
+                >
+                  <CategoryIcon name={c.icon} className="text-primary size-7" />
+                  <span className="font-medium">{c.label}</span>
+                  <span className="text-muted-foreground text-sm">
+                    {n} {n > 1 ? "modèles" : "modèle"}
+                  </span>
+                </Link>
               );
             })}
-          </ul>
+          </div>
         </section>
 
         <Separator />
@@ -159,7 +157,7 @@ export default function HomePage() {
           <div className="mb-12 max-w-xl">
             <h2 className="text-4xl sm:text-5xl">Un prix, payé une seule fois.</h2>
             <p className="text-muted-foreground mt-4">
-              Le tarif dépend du type d'événement et de la formule. Vous payez en dollars ou en francs congolais.
+              Le tarif dépend du type d'événement, de la formule et du nombre d'invités. Vous payez en dollars ou en francs congolais.
             </p>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
@@ -177,6 +175,7 @@ export default function HomePage() {
                     <p className="pt-4">
                       <span className="text-muted-foreground mr-1.5 text-sm">dès</span>
                       <span className="numeral font-serif text-5xl">{formatUsdCents(minPriceForTier(t))}</span>
+                      <span className="text-muted-foreground ml-1.5 text-sm">pour {BASE_GUESTS} invités</span>
                     </p>
                   </CardHeader>
                   <CardContent>
@@ -196,6 +195,45 @@ export default function HomePage() {
                 </Card>
               );
             })}
+          </div>
+
+          <div className="mt-16">
+            <h3 className="font-serif text-3xl">Prix par événement</h3>
+            <p className="text-muted-foreground mt-2 mb-6 max-w-xl text-sm">
+              Prix pour {BASE_GUESTS} invités. Chaque invité en plus s&apos;ajoute au prix, au tarif indiqué dans la dernière colonne.
+            </p>
+            <div className="rounded-xl border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Événement</TableHead>
+                    {TIERS.map((t) => (
+                      <TableHead key={t} className="text-right">
+                        {TIER_INFO[t].label}
+                      </TableHead>
+                    ))}
+                    <TableHead className="text-right">Par invité en plus</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {CATEGORIES.map((c) => (
+                    <TableRow key={c.id}>
+                      <TableCell className="font-medium">{c.label}</TableCell>
+                      {TIERS.map((t) => (
+                        <TableCell key={t} className="numeral text-right">
+                          {formatUsdCents(c.prices[t])}
+                        </TableCell>
+                      ))}
+                      <TableCell className="numeral text-muted-foreground text-right">{formatUsdCents(c.extraGuestCents)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <p className="text-muted-foreground mt-4 text-sm">
+              Exemple : un mariage de 200 invités en formule Standard coûte {formatUsdCents(priceUsdCents("mariage", "standard", 200))}
+              {" "}({formatUsdCents(getCategory("mariage")!.prices.standard)} + 150 invités en plus).
+            </p>
           </div>
         </section>
 

@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 import { requireApiUser } from "@/lib/auth";
-import { TIER_INFO } from "@/lib/catalog";
 import { getSql, q } from "@/lib/db";
 import { newGuestToken } from "@/lib/guests";
 import { handle, json, readJson } from "@/lib/http";
@@ -33,11 +32,11 @@ export const POST = handle(async (req, ctx) => {
       return true;
     });
 
-  const cap = TIER_INFO[inv.tier].maxRsvp;
+  const cap = inv.guest_limit;
   const count = await q<{ n: number }>`SELECT count(*)::int AS n FROM guests WHERE invitation_id = ${inv.id}`;
   const current = count[0]?.n ?? 0;
   if (current + clean.length > cap) {
-    throw new HttpError(409, `Votre formule ${TIER_INFO[inv.tier].label} permet ${cap} invités (${current} déjà ajoutés).`);
+    throw new HttpError(409, `Votre invitation permet ${cap} invités (${current} déjà ajoutés).`);
   }
 
   const sql = getSql();

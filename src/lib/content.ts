@@ -1,12 +1,19 @@
 import { z } from "zod";
 import { getCategory, TIER_INFO, type CategoryId, type Tier } from "./catalog";
+import { DEFAULT_DRINKS } from "./drinks";
+
+const DRINK_CATEGORIES: CategoryId[] = ["mariage", "dot", "anniversaire", "baby-shower", "bapteme", "autre"];
 
 // Contenu d'une invitation : validé strictement côté serveur.
 // Pas de HTML libre, pas de liens libres (liste blanche : cartes), photos hébergées chez nous uniquement.
 
 const IMAGE_HOST_SUFFIX = process.env.ALLOWED_IMAGE_HOST_SUFFIX ?? ".public.blob.vercel-storage.com";
 
+// Illustrations d'exemple fournies par Aliko Event (dossier /public/samples).
+const SAMPLE_IMAGE = /^\/samples\/[a-z-]+\.svg$/;
+
 export function isAllowedImageUrl(u: string): boolean {
+  if (SAMPLE_IMAGE.test(u)) return true;
   try {
     const x = new URL(u);
     return x.protocol === "https:" && x.hostname.endsWith(IMAGE_HOST_SUFFIX);
@@ -73,6 +80,9 @@ export const contentSchema = z.object({
   rsvpEnabled: z.boolean().default(true),
   rsvpDeadline: isoDate.default(""),
   guestbookEnabled: z.boolean().default(true),
+  showMap: z.boolean().default(true),
+  drinksEnabled: z.boolean().default(false),
+  drinks: z.array(z.string().trim().min(1).max(30)).max(20).default([]),
 });
 
 export type InvitationContent = z.infer<typeof contentSchema>;
@@ -93,10 +103,13 @@ export function sampleContent(categoryId: CategoryId): InvitationContent {
     dressCode: "",
     contactPhone: "",
     program: [],
-    photos: [],
+    photos: [`/samples/${c.id}.svg`],
     rsvpEnabled: true,
     rsvpDeadline: "",
     guestbookEnabled: true,
+    showMap: true,
+    drinksEnabled: DRINK_CATEGORIES.includes(c.id),
+    drinks: DRINK_CATEGORIES.includes(c.id) ? DEFAULT_DRINKS : [],
   };
 }
 

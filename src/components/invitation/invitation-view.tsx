@@ -423,6 +423,8 @@ function Location({ c, t }: { c: InvitationContent; t: Template }) {
   const p = t.palette;
   const mapOk = c.mapUrl && isAllowedMapUrl(c.mapUrl);
   if (!c.venueName && !c.address && !mapOk) return null;
+  const mapQuery = [c.venueName, c.address].filter(Boolean).join(", ");
+  const embed = c.showMap && mapQuery ? `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=15&output=embed` : "";
   return (
     <section className="px-6 py-10 text-center" style={{ background: p.bg }}>
       <h2 className="mb-5 text-2xl italic" style={{ fontFamily: t.fonts.display, color: p.fg }}>
@@ -440,9 +442,20 @@ function Location({ c, t }: { c: InvitationContent; t: Template }) {
             {c.address}
           </p>
         )}
-        {mapOk && (
+        {embed && (
+          <div className="mt-5 overflow-hidden rounded-xl" style={{ border: `1px solid ${p.accent}55` }}>
+            <iframe
+              src={embed}
+              title="Carte du lieu"
+              loading="lazy"
+              referrerPolicy="no-referrer"
+              className="block h-60 w-full border-0"
+            />
+          </div>
+        )}
+        {(mapOk || embed) && (
           <a
-            href={c.mapUrl}
+            href={mapOk ? c.mapUrl : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`}
             target="_blank"
             rel="noopener noreferrer nofollow"
             className="mt-5 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium"

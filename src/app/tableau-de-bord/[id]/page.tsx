@@ -30,16 +30,16 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
 
   const rsvps = await q<{
     id: string; name: string; phone: string | null; email: string | null; attendance: "yes" | "no" | "maybe";
-    party_size: number; message: string | null; created_at: Date;
-  }>`SELECT id, name, phone, email, attendance, party_size, message, created_at
+    party_size: number; drink: string | null; message: string | null; created_at: Date;
+  }>`SELECT id, name, phone, email, attendance, party_size, drink, message, created_at
      FROM rsvps WHERE invitation_id = ${inv.id} ORDER BY created_at DESC LIMIT 1000`;
   const items: RsvpItem[] = rsvps.map((r) => ({ ...r, created_at: new Date(r.created_at).toISOString() }));
 
-  const guestRows = await q<{ id: string; name: string; token: string; attendance: "yes" | "no" | "maybe" | null }>`
-    SELECT g.id, g.name, g.token, r.attendance
+  const guestRows = await q<{ id: string; name: string; token: string; attendance: "yes" | "no" | "maybe" | null; checked_in: boolean }>`
+    SELECT g.id, g.name, g.token, r.attendance, (g.checked_in_at IS NOT NULL) AS checked_in
     FROM guests g LEFT JOIN rsvps r ON r.guest_id = g.id
     WHERE g.invitation_id = ${inv.id} ORDER BY g.created_at ASC LIMIT 1000`;
-  const guests: GuestItem[] = guestRows;
+  const guests: GuestItem[] = guestRows.map((g) => ({ id: g.id, name: g.name, token: g.token, attendance: g.attendance, checkedIn: g.checked_in }));
 
   const messageRows = await q<{ id: string; name: string; message: string; created_at: Date }>`
     SELECT id, name, message, created_at FROM guestbook
@@ -54,7 +54,7 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
           <ArrowLeft className="size-4" /> Mes invitations
         </Link>
         <Editor
-          invitation={{ id: inv.id, slug: inv.slug, status: inv.status as "draft" | "published" | "suspended" | "archived", tier: inv.tier }}
+          invitation={{ id: inv.id, slug: inv.slug, status: inv.status as "draft" | "published" | "suspended" | "archived", tier: inv.tier, guestLimit: inv.guest_limit }}
           template={template}
           initialContent={parseStoredContent(inv.content)}
           rsvps={items}

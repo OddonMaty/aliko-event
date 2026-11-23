@@ -17,6 +17,7 @@ CREATE TABLE orders (
   template_id text NOT NULL,
   category text NOT NULL,
   tier text NOT NULL CHECK (tier IN ('essentiel','standard','premium')),
+  guest_limit integer NOT NULL DEFAULT 50 CHECK (guest_limit IN (50,100,200,300,500,1000)),
   amount_usd_cents integer NOT NULL CHECK (amount_usd_cents > 0),
   currency text NOT NULL CHECK (currency IN ('USD','CDF')),
   amount integer NOT NULL CHECK (amount > 0),            -- cents si USD, francs si CDF
@@ -48,6 +49,7 @@ CREATE TABLE invitations (
   template_id text NOT NULL,
   category text NOT NULL,
   tier text NOT NULL CHECK (tier IN ('essentiel','standard','premium')),
+  guest_limit integer NOT NULL DEFAULT 50 CHECK (guest_limit IN (50,100,200,300,500,1000)),
   status text NOT NULL DEFAULT 'awaiting_payment'
     CHECK (status IN ('awaiting_payment','draft','published','suspended','archived')),
   content jsonb NOT NULL DEFAULT '{}'::jsonb,
@@ -68,6 +70,7 @@ CREATE TABLE rsvps (
   attendance text NOT NULL CHECK (attendance IN ('yes','no','maybe')),
   party_size integer NOT NULL DEFAULT 1 CHECK (party_size BETWEEN 1 AND 10),
   message text,
+  drink text,
   ip_hash text,
   created_at timestamptz NOT NULL DEFAULT now()
 );

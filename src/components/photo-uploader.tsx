@@ -21,6 +21,9 @@ async function compress(file: File): Promise<Blob> {
   );
 }
 
+/** Illustration d'exemple fournie par Aliko Event : elle ne compte pas dans la limite et laisse la place aux vraies photos. */
+const isSample = (u: string) => u.startsWith("/samples/");
+
 export function PhotoUploader({
   invitationId,
   photos,
@@ -40,7 +43,7 @@ export function PhotoUploader({
     setBusy(true);
     let next = [...photos];
     for (const file of Array.from(files)) {
-      if (next.length >= max) {
+      if (next.filter((p) => !isSample(p)).length >= max) {
         toast.error(`Votre formule autorise ${max} photo(s) au maximum.`);
         break;
       }
@@ -52,7 +55,7 @@ export function PhotoUploader({
         const res = await fetch("/api/upload", { method: "POST", body: fd });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) throw new Error(data.error ?? "Téléversement impossible");
-        next = [...next, data.url as string];
+        next = [...next.filter((p) => !isSample(p)), data.url as string];
         onChange(next);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Téléversement impossible");
@@ -82,11 +85,11 @@ export function PhotoUploader({
         ))}
       </div>
       <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={(e) => onFiles(e.target.files)} />
-      <Button type="button" variant="outline" disabled={busy || photos.length >= max} onClick={() => input.current?.click()}>
+      <Button type="button" variant="outline" disabled={busy || photos.filter((p) => !isSample(p)).length >= max} onClick={() => input.current?.click()}>
         {busy ? <Loader2 className="animate-spin" /> : <ImagePlus />}
-        Ajouter des photos ({photos.length}/{max})
+        Ajouter des photos ({photos.filter((p) => !isSample(p)).length}/{max})
       </Button>
-      <p className="text-muted-foreground text-xs">La première photo sert de couverture. JPEG, PNG ou WebP.</p>
+      <p className="text-muted-foreground text-xs">La première photo sert de couverture. L'illustration d'exemple disparaît dès que vous ajoutez la vôtre. JPEG, PNG ou WebP.</p>
     </div>
   );
 }

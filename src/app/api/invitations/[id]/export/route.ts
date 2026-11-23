@@ -19,15 +19,15 @@ export const GET = handle(async (_req, ctx) => {
   if (!TIER_INFO[inv.tier].csv) throw new HttpError(403, "L'export est disponible à partir du palier Standard");
 
   const rows = await q<{
-    name: string; phone: string | null; email: string | null; attendance: string; party_size: number; message: string | null; created_at: Date;
-  }>`SELECT name, phone, email, attendance, party_size, message, created_at FROM rsvps
+    name: string; phone: string | null; email: string | null; attendance: string; party_size: number; drink: string | null; message: string | null; created_at: Date;
+  }>`SELECT name, phone, email, attendance, party_size, drink, message, created_at FROM rsvps
      WHERE invitation_id = ${inv.id} ORDER BY created_at ASC`;
 
   const label: Record<string, string> = { yes: "Présent", no: "Absent", maybe: "Peut-être" };
   const lines = [
-    ["Nom", "Téléphone", "Email", "Réponse", "Personnes", "Message", "Date"].map(cell).join(";"),
+    ["Nom", "Téléphone", "Email", "Réponse", "Personnes", "Boisson", "Message", "Date"].map(cell).join(";"),
     ...rows.map((r) =>
-      [r.name, r.phone, r.email, label[r.attendance] ?? r.attendance, r.party_size, r.message, new Date(r.created_at).toISOString()]
+      [r.name, r.phone, r.email, label[r.attendance] ?? r.attendance, r.party_size, r.drink, r.message, new Date(r.created_at).toISOString()]
         .map(cell)
         .join(";"),
     ),

@@ -91,7 +91,7 @@ export default async function InvitationPage({ params, searchParams }: Props) {
       <div className="mx-auto max-w-xl">
         <InvitationView content={content} template={template} brand={!TIER_INFO[inv.tier].brandingFree} guestName={guest?.name}>
           {content.rsvpEnabled && (
-            <RsvpForm slug={inv.slug} template={template} deadline={content.rsvpDeadline || undefined} guest={guest} answered={answered} />
+            <RsvpForm slug={inv.slug} template={template} deadline={content.rsvpDeadline || undefined} guest={guest} answered={answered} drinks={content.drinksEnabled ? content.drinks : []} />
           )}
           {content.guestbookEnabled && <Guestbook slug={inv.slug} template={template} guest={guest} initial={notes} />}
           {guest && <GuestPass token={guest.token} name={guest.name} date={formatDateFr(content.date, "full")} template={template} />}

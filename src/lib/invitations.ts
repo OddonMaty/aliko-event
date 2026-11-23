@@ -11,6 +11,7 @@ export interface InvitationRow {
   template_id: string;
   category: string;
   tier: Tier;
+  guest_limit: number;
   status: "awaiting_payment" | "draft" | "published" | "suspended" | "archived";
   content: unknown;
   event_date: string | null;
@@ -24,7 +25,7 @@ export const isUuid = (v: string) => UUID.test(v);
 export async function getOwnedInvitation(id: string, userId: string): Promise<InvitationRow> {
   if (!isUuid(id)) throw new HttpError(404, "Invitation introuvable");
   const rows = await q<InvitationRow>`
-    SELECT id, user_id, order_id, slug, template_id, category, tier, status, content,
+    SELECT id, user_id, order_id, slug, template_id, category, tier, guest_limit, status, content,
            event_date::text AS event_date, expires_at, published_at
     FROM invitations WHERE id = ${id} AND user_id = ${userId}`;
   if (!rows[0]) throw new HttpError(404, "Invitation introuvable");

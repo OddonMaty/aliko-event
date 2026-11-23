@@ -5,14 +5,14 @@ import { CheckoutForm } from "@/components/checkout-form";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { requireUser } from "@/lib/auth";
-import { getCategory, isTier, priceUsdCents, TIER_INFO } from "@/lib/catalog";
+import { getCategory, isGuestLimit, isTier, priceUsdCents, TIER_INFO } from "@/lib/catalog";
 import { toMinorAmount } from "@/lib/money";
 import { getTemplate } from "@/lib/templates";
 import { isTestPayments } from "@/lib/testmode";
 
 export const metadata: Metadata = { title: "Paiement", robots: { index: false } };
 
-type Props = { searchParams: Promise<{ modele?: string; categorie?: string; palier?: string }> };
+type Props = { searchParams: Promise<{ modele?: string; categorie?: string; palier?: string; invites?: string }> };
 
 export default async function CheckoutPage({ searchParams }: Props) {
   const sp = await searchParams;
@@ -21,10 +21,12 @@ export default async function CheckoutPage({ searchParams }: Props) {
   if (!template || !category || !isTier(sp.palier) || !template.categories.includes(category.id)) notFound();
 
   const tier = sp.palier;
-  const here = `/acheter?modele=${template.id}&categorie=${category.id}&palier=${tier}`;
+  const guestsParam = Number(sp.invites ?? 50);
+  const guests = isGuestLimit(guestsParam) ? guestsParam : 50;
+  const here = `/acheter?modele=${template.id}&categorie=${category.id}&palier=${tier}&invites=${guests}`;
   const user = await requireUser(here);
 
-  const usdCents = priceUsdCents(category.id, tier);
+  const usdCents = priceUsdCents(category.id, tier, guests);
   return (
     <>
       <SiteHeader />
@@ -37,6 +39,7 @@ export default async function CheckoutPage({ searchParams }: Props) {
           categoryLabel={category.label}
           tier={tier}
           tierLabel={TIER_INFO[tier].label}
+          guests={guests}
           usd={toMinorAmount(usdCents, "USD")}
           cdf={toMinorAmount(usdCents, "CDF")}
           userName={user.name}

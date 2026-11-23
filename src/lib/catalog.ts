@@ -1,5 +1,17 @@
 // Catalogue : catégories d'événements, paliers et prix (en cents USD).
-// Les prix s'inspirent des références Etsy pour le faire-part numérique et évoluent par catégorie.
+// Prix d'une invitation = prix de base (catégorie × formule, pour 50 invités)
+//                       + supplément par invité au-delà de 50 (taux propre à la catégorie).
+// TOUS les prix se modifient ICI, à un seul endroit.
+
+/** Paliers de nombre d'invités proposés à l'achat. */
+export const GUEST_LIMITS = [50, 100, 200, 300, 500, 1000] as const;
+export type GuestLimit = (typeof GUEST_LIMITS)[number];
+/** Nombre d'invités inclus dans le prix de base. */
+export const BASE_GUESTS = 50;
+
+export function isGuestLimit(v: unknown): v is GuestLimit {
+  return typeof v === "number" && (GUEST_LIMITS as readonly number[]).includes(v);
+}
 
 export const TIERS = ["essentiel", "standard", "premium"] as const;
 export type Tier = (typeof TIERS)[number];
@@ -24,8 +36,10 @@ export interface Category {
   tagline: string;
   eyebrow: string;
   sample: { title: string; subtitle: string; message: string; venue: string; address: string; time: string };
-  /** Prix en cents USD par palier */
+  /** Prix de base en cents USD par formule, pour BASE_GUESTS invités */
   prices: Record<Tier, number>;
+  /** Supplément en cents USD par invité au-delà de BASE_GUESTS */
+  extraGuestCents: number;
 }
 
 export const CATEGORIES: Category[] = [
@@ -44,6 +58,7 @@ export const CATEGORIES: Category[] = [
       time: "15:00",
     },
     prices: { essentiel: 1200, standard: 1800, premium: 2900 },
+    extraGuestCents: 6,
   },
   {
     id: "dot",
@@ -60,6 +75,7 @@ export const CATEGORIES: Category[] = [
       time: "10:00",
     },
     prices: { essentiel: 1200, standard: 1800, premium: 2900 },
+    extraGuestCents: 6,
   },
   {
     id: "anniversaire",
@@ -76,6 +92,7 @@ export const CATEGORIES: Category[] = [
       time: "19:00",
     },
     prices: { essentiel: 600, standard: 900, premium: 1500 },
+    extraGuestCents: 4,
   },
   {
     id: "baby-shower",
@@ -92,6 +109,7 @@ export const CATEGORIES: Category[] = [
       time: "14:00",
     },
     prices: { essentiel: 600, standard: 900, premium: 1500 },
+    extraGuestCents: 3,
   },
   {
     id: "bapteme",
@@ -108,6 +126,7 @@ export const CATEGORIES: Category[] = [
       time: "11:00",
     },
     prices: { essentiel: 800, standard: 1200, premium: 1800 },
+    extraGuestCents: 4,
   },
   {
     id: "diplome",
@@ -124,6 +143,7 @@ export const CATEGORIES: Category[] = [
       time: "09:00",
     },
     prices: { essentiel: 600, standard: 900, premium: 1400 },
+    extraGuestCents: 3,
   },
   {
     id: "conference",
@@ -140,6 +160,7 @@ export const CATEGORIES: Category[] = [
       time: "08:30",
     },
     prices: { essentiel: 800, standard: 1200, premium: 2000 },
+    extraGuestCents: 5,
   },
   {
     id: "reunion",
@@ -156,6 +177,7 @@ export const CATEGORIES: Category[] = [
       time: "10:00",
     },
     prices: { essentiel: 600, standard: 1000, premium: 1600 },
+    extraGuestCents: 3,
   },
   {
     id: "autre",
@@ -172,6 +194,7 @@ export const CATEGORIES: Category[] = [
       time: "18:00",
     },
     prices: { essentiel: 500, standard: 800, premium: 1200 },
+    extraGuestCents: 3,
   },
 ];
 
@@ -179,10 +202,16 @@ export function getCategory(id: string): Category | undefined {
   return CATEGORIES.find((c) => c.id === id);
 }
 
-export function priceUsdCents(category: CategoryId, tier: Tier): number {
+/** Supplément (cents USD) pour un nombre d'invités donné. */
+export function guestExtraCents(extraGuestCents: number, guests: number): number {
+  return Math.max(0, guests - BASE_GUESTS) * extraGuestCents;
+}
+
+/** Prix final en cents USD. Toujours appelé côté serveur pour facturer. */
+export function priceUsdCents(category: CategoryId, tier: Tier, guests: number = BASE_GUESTS): number {
   const c = getCategory(category);
   if (!c) throw new Error("Catégorie inconnue");
-  return c.prices[tier];
+  return c.prices[tier] + guestExtraCents(c.extraGuestCents, guests);
 }
 
 export interface TierInfo {
@@ -190,7 +219,6 @@ export interface TierInfo {
   blurb: string;
   maxPhotos: number;
   maxProgram: number;
-  maxRsvp: number;
   csv: boolean;
   customSlug: boolean;
   brandingFree: boolean;
@@ -204,11 +232,10 @@ export const TIER_INFO: Record<Tier, TierInfo> = {
     blurb: "L'invitation, le lien et le QR code.",
     maxPhotos: 1,
     maxProgram: 0,
-    maxRsvp: 50,
     csv: false,
     customSlug: false,
     brandingFree: false,
-    features: ["1 photo", "Lien unique + QR code", "Confirmation de présence (50 réponses)", "Carte du lieu"],
+    features: ["1 photo", "Lien unique + QR code", "Confirmation de présence en ligne", "Carte du lieu"],
     soon: [],
   },
   standard: {
@@ -216,11 +243,10 @@ export const TIER_INFO: Record<Tier, TierInfo> = {
     blurb: "Le choix de la plupart des événements.",
     maxPhotos: 6,
     maxProgram: 8,
-    maxRsvp: 200,
     csv: true,
     customSlug: false,
     brandingFree: false,
-    features: ["6 photos", "Programme de la journée", "200 réponses", "Export Excel/CSV des réponses"],
+    features: ["6 photos", "Programme de la journée", "Export Excel/CSV des réponses"],
     soon: [],
   },
   premium: {
@@ -228,12 +254,11 @@ export const TIER_INFO: Record<Tier, TierInfo> = {
     blurb: "Pour les grands événements.",
     maxPhotos: 12,
     maxProgram: 8,
-    maxRsvp: 500,
     csv: true,
     customSlug: true,
     brandingFree: true,
-    features: ["12 photos", "500 réponses", "Lien personnalisé (jean-et-marie)", "Sans mention Aliko Event"],
-    soon: ["QR code par invité", "Musique d'ambiance"],
+    features: ["12 photos", "Lien personnalisé (jean-et-marie)", "Sans mention Aliko Event"],
+    soon: ["Musique d'ambiance"],
   },
 };
 
