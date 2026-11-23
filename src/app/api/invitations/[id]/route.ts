@@ -5,7 +5,7 @@ import { TIER_INFO } from "@/lib/catalog";
 import { contentSchema, customSlugSchema, enforceTierLimits } from "@/lib/content";
 import { q } from "@/lib/db";
 import { handle, json, readJson } from "@/lib/http";
-import { expiryFromEventDate, getOwnedInvitation } from "@/lib/invitations";
+import { expiryFromEventDate, getOwnedInvitation, todayKinshasa } from "@/lib/invitations";
 import { assertSameOrigin, audit, HttpError, rateLimit } from "@/lib/security";
 
 const body = z.object({ content: z.unknown(), slug: z.string().optional() });
@@ -40,14 +40,18 @@ export const PUT = handle(async (req, ctx) => {
     slug = customSlugSchema.parse(parsed.slug);
   }
 
-  const expires = inv.status === "published" ? expiryFromEventDate(content.date) : null;
+  // Une date passée est refusée si elle change : l'invitation serait supprimée dès la nuit suivante.
+  if (content.date && content.date !== inv.event_date && content.date < todayKinshasa()) {
+    throw new HttpError(400, "La date de l'événement est déjà passée");
+  }
+  const expires = content.date ? expiryFromEventDate(content.date) : null;
   try {
     await q`
       UPDATE invitations SET
         content = ${JSON.stringify(content)}::jsonb,
         event_date = NULLIF(${content.date}, '')::date,
         slug = ${slug},
-        expires_at = CASE WHEN status = 'published' THEN COALESCE(${expires}::timestamptz, expires_at) ELSE expires_at END,
+        expires_at = ${expires}::timestamptz,
         updated_at = now()
       WHERE id = ${inv.id} AND user_id = ${user.id}`;
   } catch (e) {

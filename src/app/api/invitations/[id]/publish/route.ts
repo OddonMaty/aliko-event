@@ -2,7 +2,7 @@ import { requireApiUser } from "@/lib/auth";
 import { getCategory } from "@/lib/catalog";
 import { q } from "@/lib/db";
 import { handle, json } from "@/lib/http";
-import { expiryFromEventDate, getOwnedInvitation, parseStoredContent } from "@/lib/invitations";
+import { expiryFromEventDate, getOwnedInvitation, parseStoredContent, todayKinshasa } from "@/lib/invitations";
 import { assertSameOrigin, audit, HttpError } from "@/lib/security";
 
 export const POST = handle(async (req, ctx) => {
@@ -20,8 +20,7 @@ export const POST = handle(async (req, ctx) => {
   if (!content.date) throw new HttpError(400, "Indiquez la date de l'événement");
   if (!content.venueName) throw new HttpError(400, "Indiquez le lieu de l'événement");
 
-  const today = new Date().toISOString().slice(0, 10);
-  if (content.date < today) throw new HttpError(400, "La date de l'événement est déjà passée");
+  if (content.date < todayKinshasa()) throw new HttpError(400, "La date de l'événement est déjà passée");
 
   await q`
     UPDATE invitations SET status = 'published', published_at = COALESCE(published_at, now()),

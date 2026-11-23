@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Hourglass } from "lucide-react";
 
 import { Editor, type MessageItem, type RsvpItem } from "@/components/editor";
 import type { GuestItem } from "@/components/guest-manager";
 import { SiteHeader } from "@/components/site-header";
 import { requireUser } from "@/lib/auth";
 import { q } from "@/lib/db";
-import { getOwnedInvitation, parseStoredContent } from "@/lib/invitations";
+import { getOwnedInvitation, lastOnlineDay, parseStoredContent } from "@/lib/invitations";
 import { getTemplate } from "@/lib/templates";
-import { appUrl } from "@/lib/utils";
+import { appUrl, formatDateFr } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Personnaliser", robots: { index: false } };
 
@@ -46,6 +46,9 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
     WHERE invitation_id = ${inv.id} AND hidden = false ORDER BY created_at DESC LIMIT 200`;
   const messages: MessageItem[] = messageRows.map((m) => ({ ...m, created_at: new Date(m.created_at).toISOString() }));
 
+  const content = parseStoredContent(inv.content);
+  const lastDay = content.date ? lastOnlineDay(content.date) : null;
+
   return (
     <>
       <SiteHeader />
@@ -53,10 +56,19 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
         <Link href="/tableau-de-bord" className="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-1 text-sm">
           <ArrowLeft className="size-4" /> Mes invitations
         </Link>
+        {lastDay && (
+          <div className="bg-accent/40 mb-6 flex items-start gap-3 rounded-lg border p-3.5 text-sm">
+            <Hourglass className="text-primary mt-0.5 size-4 shrink-0" />
+            <p>
+              Votre invitation reste en ligne jusqu&apos;au <strong>{formatDateFr(lastDay, "long")}</strong> à minuit. Elle est ensuite supprimée
+              automatiquement, avec la liste des invités et leurs réponses. Téléchargez-les avant si besoin.
+            </p>
+          </div>
+        )}
         <Editor
           invitation={{ id: inv.id, slug: inv.slug, status: inv.status as "draft" | "published" | "suspended" | "archived", tier: inv.tier, guestLimit: inv.guest_limit }}
           template={template}
-          initialContent={parseStoredContent(inv.content)}
+          initialContent={content}
           rsvps={items}
           guests={guests}
           messages={messages}

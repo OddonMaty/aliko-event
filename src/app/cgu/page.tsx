@@ -46,7 +46,7 @@ export default function CguPage() {
 
       <LegalSection title="4. Durée et limites">
         <ul>
-          <li>Votre invitation reste en ligne jusqu&apos;à 30 jours après la date de l&apos;événement. Passé ce délai, le lien n&apos;est plus accessible.</li>
+          <li>Votre invitation reste en ligne jusqu&apos;à la fin du lendemain de la date de l&apos;événement (minuit, heure de Kinshasa). Elle est ensuite supprimée automatiquement, avec ses invités, leurs réponses, les mots doux et les photos. Téléchargez la liste de vos invités avant cette date si vous voulez la garder.</li>
           <li>Vous pouvez modifier votre invitation autant que vous le souhaitez pendant cette période. Le lien ne change pas.</li>
           <li>Le nombre d&apos;invités, de photos et d&apos;étapes de programme est limité selon votre achat. Au-delà, l&apos;ajout est refusé.</li>
         </ul>

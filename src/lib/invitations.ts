@@ -40,10 +40,31 @@ export function parseStoredContent(raw: unknown): InvitationContent {
   return contentSchema.parse({ title: "Invitation" });
 }
 
-/** Date d'expiration : 30 jours après l'événement (fin de journée). */
+/** Fuseau de référence : Kinshasa (UTC+1, sans changement d'heure). */
+const KINSHASA_OFFSET_MS = 60 * 60 * 1000;
+
+/** Date du jour à Kinshasa, au format AAAA-MM-JJ. */
+export function todayKinshasa(): string {
+  return new Date(Date.now() + KINSHASA_OFFSET_MS).toISOString().slice(0, 10);
+}
+
+/**
+ * Date d'expiration : fin de la journée qui suit l'événement (minuit à Kinshasa, soit J+2 à 00:00).
+ * Exemple : mariage le 10 → l'invitation reste en ligne jusqu'au 11 à minuit, puis elle est supprimée.
+ */
 export function expiryFromEventDate(date: string): string | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
-  const d = new Date(`${date}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + 31);
+  const d = new Date(`${date}T00:00:00+01:00`);
+  if (Number.isNaN(d.getTime())) return null;
+  d.setUTCDate(d.getUTCDate() + 2);
   return d.toISOString();
+}
+
+/** Dernier jour en ligne (AAAA-MM-JJ) : le lendemain de l'événement. */
+export function lastOnlineDay(date: string): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
+  const d = new Date(`${date}T00:00:00Z`);
+  if (Number.isNaN(d.getTime())) return null;
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().slice(0, 10);
 }

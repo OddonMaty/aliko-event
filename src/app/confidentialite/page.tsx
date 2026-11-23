@@ -96,7 +96,7 @@ export default function PrivacyPage() {
         <ul>
           <li>Votre compte : tant qu&apos;il est actif, ou jusqu&apos;à votre demande de suppression.</li>
           <li>Vos commandes : pendant la durée exigée par nos obligations comptables.</li>
-          <li>Votre invitation, vos invités et leurs réponses : l&apos;invitation est accessible jusqu&apos;à 30 jours après l&apos;événement. Ces données sont ensuite supprimées ou rendues anonymes, au plus tard 12 mois après la date de l&apos;événement, et plus tôt sur simple demande.</li>
+          <li>Votre invitation, vos invités, leurs réponses, les mots doux et les photos : supprimés automatiquement à la fin du lendemain de la date de l&apos;événement (minuit, heure de Kinshasa), et plus tôt sur simple demande. Cette suppression est définitive.</li>
         </ul>
       </LegalSection>
 

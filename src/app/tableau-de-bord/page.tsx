@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { requireUser } from "@/lib/auth";
 import { getCategory, TIER_INFO, type Tier } from "@/lib/catalog";
 import { q } from "@/lib/db";
-import { parseStoredContent } from "@/lib/invitations";
+import { lastOnlineDay, parseStoredContent } from "@/lib/invitations";
 import { getTemplate } from "@/lib/templates";
 import { formatDateFr } from "@/lib/utils";
 
@@ -87,7 +87,10 @@ export default async function DashboardPage() {
                         {content.date ? ` · ${formatDateFr(content.date, "long")}` : ""}
                       </p>
                       {r.status !== "awaiting_payment" && (
-                        <p className="text-muted-foreground text-xs">{r.rsvp_count} réponse(s)</p>
+                        <p className="text-muted-foreground text-xs">
+                          {r.rsvp_count} réponse(s)
+                          {content.date && lastOnlineDay(content.date) ? ` · en ligne jusqu'au ${formatDateFr(lastOnlineDay(content.date)!, "long")}` : ""}
+                        </p>
                       )}
                     </div>
                     <Button asChild variant={r.status === "awaiting_payment" ? "outline" : "default"} size="sm">
