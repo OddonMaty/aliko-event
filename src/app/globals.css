@@ -96,6 +96,21 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overflow-x: hidden;
+  }
+  /* Pas de double-tap pour zoomer sur les contrôles : ça se comporte comme une application. */
+  a,
+  button,
+  input,
+  select,
+  textarea,
+  label,
+  [role="tab"],
+  [role="radio"] {
+    touch-action: manipulation;
   }
   h1,
   h2,
@@ -129,3 +144,42 @@
 
 /* Chiffres d'étape en Cormorant : chiffres alignés sur la ligne de base */
 .numeral { font-variant-numeric: lining-nums; }
+
+
+/* ---------- Mobile : comportement d'application ---------- */
+
+/* Cases à cocher plus grandes au doigt */
+@media (max-width: 767px) {
+  input[type="checkbox"],
+  input[type="radio"] {
+    width: 1.375rem;
+    height: 1.375rem;
+  }
+}
+
+/* Barre d'onglets du bas : le contenu garde de la place, l'avis cookies et la barre d'actions se placent au-dessus. */
+@media (max-width: 767px) {
+  body:has([data-tabbar]) {
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom));
+  }
+  body:has([data-tabbar]) .cookie-notice {
+    bottom: calc(4.75rem + env(safe-area-inset-bottom));
+  }
+}
+.cookie-notice {
+  bottom: calc(0.75rem + env(safe-area-inset-bottom));
+}
+
+/* Feuille du bas (menu) */
+@keyframes aliko-slide-up { from { transform: translateY(100%); } }
+@keyframes aliko-slide-down { to { transform: translateY(100%); } }
+[data-slot="sheet-content"][data-side="bottom"][data-state="open"] { animation: aliko-slide-up 0.3s cubic-bezier(0.22, 1, 0.36, 1); }
+[data-slot="sheet-content"][data-side="bottom"][data-state="closed"] { animation: aliko-slide-down 0.2s ease-in forwards; }
+
+/* Défilement horizontal sans barre visible (onglets) */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="sheet-content"][data-side="bottom"] { animation: none !important; }
+}

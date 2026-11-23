@@ -33,7 +33,7 @@ export default async function TemplatePage({ params, searchParams }: Props) {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-6xl px-4 py-10">
+      <main className="mx-auto max-w-6xl px-4 py-6 pb-28 md:py-10 lg:pb-10">
         <Link href="/modeles" className="text-muted-foreground hover:text-foreground mb-6 inline-flex items-center gap-1 text-sm">
           <ArrowLeft className="size-4" /> Tous les modèles
         </Link>

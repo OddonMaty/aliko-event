@@ -29,22 +29,22 @@ export function ReportButton({ slug, color }: { slug: string; color: string }) {
   return (
     <div className="px-6 pb-6 text-center text-xs" style={{ color }}>
       {!open ? (
-        <button type="button" className="underline underline-offset-4 opacity-70 hover:opacity-100" onClick={() => setOpen(true)}>
+        <button type="button" className="inline-flex min-h-11 items-center underline underline-offset-4 opacity-70 hover:opacity-100" onClick={() => setOpen(true)}>
           Signaler cette invitation
         </button>
       ) : (
         <form onSubmit={submit} className="mx-auto max-w-xs space-y-2 text-left">
-          <select name="reason" required className="w-full rounded border bg-transparent p-2" defaultValue="">
+          <select name="reason" required className="w-full rounded border bg-transparent p-2 text-base" defaultValue="">
             <option value="" disabled>Motif du signalement</option>
             <option value="arnaque">Arnaque ou lien suspect</option>
             <option value="contenu-inapproprie">Contenu inapproprié</option>
             <option value="usurpation">Usurpation d'identité</option>
             <option value="autre">Autre</option>
           </select>
-          <textarea name="details" maxLength={500} rows={2} placeholder="Détails (optionnel)" className="w-full rounded border bg-transparent p-2" />
+          <textarea name="details" maxLength={500} rows={2} placeholder="Détails (optionnel)" className="w-full rounded border bg-transparent p-2 text-base" />
           <Turnstile onToken={setToken} />
           {error && <p role="alert" style={{ color: "#f97066" }}>{error}</p>}
-          <button type="submit" className="rounded border px-3 py-1.5">Envoyer</button>
+          <button type="submit" className="min-h-10 rounded border px-4 py-2">Envoyer</button>
         </form>
       )}
     </div>

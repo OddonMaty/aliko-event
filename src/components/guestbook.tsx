@@ -35,7 +35,7 @@ export function Guestbook({
   const [token, setToken] = useState("");
 
   const field = { background: "transparent", color: p.fg, border: `1px solid ${p.accent}66` } as const;
-  const inputCls = "w-full rounded-lg px-3 py-2.5 text-sm outline-none placeholder:opacity-50 focus:ring-2";
+  const inputCls = "w-full rounded-lg px-3.5 py-3 text-base outline-none placeholder:opacity-50 focus:ring-2";
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -99,7 +99,7 @@ export function Guestbook({
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold disabled:opacity-60"
+          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-base font-semibold disabled:opacity-60"
           style={{ background: p.accent, color: p.bg }}
         >
           {loading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}

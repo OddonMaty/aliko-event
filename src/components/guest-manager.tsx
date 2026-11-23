@@ -103,7 +103,7 @@ export function GuestManager({ invitationId, slug, title, baseUrl, published, ca
             onChange={(e) => setText(e.target.value)}
             placeholder={"Julie Mbuyi\nFamille Kasongo\nPasteur Daniel"}
           />
-          <Button type="button" size="sm" onClick={add} disabled={busy || !text.trim()}>
+          <Button type="button" size="sm" className="w-full sm:w-auto" onClick={add} disabled={busy || !text.trim()}>
             {busy ? <Loader2 className="animate-spin" /> : <Plus />} Ajouter
           </Button>
         </div>
@@ -130,15 +130,15 @@ export function GuestManager({ invitationId, slug, title, baseUrl, published, ca
             {guests.map((g) => {
               const st = STATUS[g.attendance ?? "none"];
               return (
-                <li key={g.id} className="flex flex-wrap items-center justify-between gap-3 p-3">
-                  <div className="flex min-w-0 items-center gap-3">
+                <li key={g.id} className="flex flex-col gap-3 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5">
                     <span className="truncate text-sm font-medium">{g.name}</span>
                     <Badge variant={st.variant}>{st.label}</Badge>
                     {g.checkedIn && <Badge variant="success">Entré(e)</Badge>}
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <CopyButton value={linkFor(g)} label="Lien" />
-                    <Button asChild variant="outline" size="sm">
+                  <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-1.5 sm:flex">
+                    <CopyButton value={linkFor(g)} label="Lien" className="w-full sm:w-auto" />
+                    <Button asChild variant="outline" size="sm" className="w-full sm:w-auto">
                       <a href={whatsappFor(g)} target="_blank" rel="noopener noreferrer">
                         <MessageCircle /> WhatsApp
                       </a>

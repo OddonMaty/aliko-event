@@ -30,8 +30,8 @@ export default async function CheckoutPage({ searchParams }: Props) {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-2xl px-4 py-12">
-        <h1 className="mb-8 text-3xl font-semibold">Finaliser votre achat</h1>
+      <main className="mx-auto max-w-2xl px-4 py-6 md:py-12">
+        <h1 className="mb-6 text-3xl font-semibold md:mb-8">Finaliser votre achat</h1>
         <CheckoutForm
           templateId={template.id}
           templateName={template.name}

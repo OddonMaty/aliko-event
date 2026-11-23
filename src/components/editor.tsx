@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Download, EyeOff, Loader2, Plus, Save, Send, Trash2 } from "lucide-react";
+import { Check, Download, Eye, EyeOff, Loader2, Pencil, Plus, Save, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { CopyButton } from "@/components/copy-button";
 import { GuestManager, type GuestItem } from "@/components/guest-manager";
 import { InvitationView } from "@/components/invitation/invitation-view";
 import { PhotoUploader } from "@/components/photo-uploader";
+import { ShareButton } from "@/components/share-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -78,6 +79,16 @@ export function Editor({ invitation, template, initialContent, rsvps, guests, me
   const [status, setStatus] = useState(invitation.status);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
+  const [tab, setTab] = useState("contenu");
+  const go = (value: string) => {
+    setTab(value);
+    window.scrollTo({ top: 0 });
+  };
+
+  // Sur téléphone, l'onglet actif reste visible dans la barre défilante.
+  useEffect(() => {
+    document.querySelector('[role="tab"][data-state="active"]')?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+  }, [tab]);
 
   const editable = status === "draft" || status === "published";
   const link = `${baseUrl}/i/${savedSlug}`;
@@ -163,7 +174,7 @@ export function Editor({ invitation, template, initialContent, rsvps, guests, me
   const whatsapp = `https://wa.me/?text=${encodeURIComponent(`Vous êtes invité(e) : ${content.title}\n${link}`)}`;
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_400px]">
+    <div className="grid gap-8 pb-24 md:pb-0 lg:grid-cols-[minmax(0,1fr)_400px]">
       <div className="min-w-0 space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
@@ -173,7 +184,7 @@ export function Editor({ invitation, template, initialContent, rsvps, guests, me
             <Badge variant="outline">{info.label}</Badge>
           </div>
           {editable && (
-            <div className="flex gap-2">
+            <div className="hidden gap-2 md:flex">
               <Button variant="outline" onClick={() => save()} disabled={saving || publishing}>
                 {saving ? <Loader2 className="animate-spin" /> : <Save />} Enregistrer
               </Button>
@@ -194,8 +205,8 @@ export function Editor({ invitation, template, initialContent, rsvps, guests, me
           </Card>
         )}
 
-        <Tabs defaultValue="contenu">
-          <TabsList className="w-full justify-start overflow-x-auto">
+        <Tabs value={tab} onValueChange={go}>
+          <TabsList className="no-scrollbar border-border/60 sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 w-full justify-start overflow-x-auto border md:static">
             <TabsTrigger value="contenu">Contenu</TabsTrigger>
             <TabsTrigger value="photos">Photos</TabsTrigger>
             <TabsTrigger value="partage">Partage</TabsTrigger>
@@ -280,10 +291,9 @@ export function Editor({ invitation, template, initialContent, rsvps, guests, me
                 {info.maxProgram > 0 && (
                   <CardContent className="space-y-3">
                     {content.program.map((step, i) => (
-                      <div key={i} className="flex gap-2">
+                      <div key={i} className="grid grid-cols-[6.75rem_minmax(0,1fr)_auto] gap-2">
                         <Input
                           type="time"
-                          className="w-32"
                           value={step.time}
                           aria-label="Heure"
                           onChange={(e) => set("program", content.program.map((s, j) => (j === i ? { ...s, time: e.target.value } : s)))}
@@ -373,7 +383,7 @@ export function Editor({ invitation, template, initialContent, rsvps, guests, me
                               aria-pressed={on}
                               onClick={() => toggleDrink(d)}
                               className={cn(
-                                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors",
+                                "inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm transition-colors",
                                 on ? "border-primary bg-primary text-primary-foreground" : "hover:bg-accent/40",
                               )}
                             >
@@ -447,6 +457,7 @@ export function Editor({ invitation, template, initialContent, rsvps, guests, me
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <CopyButton value={link} />
+                  <ShareButton title={content.title} text={`Vous êtes invité(e) : ${content.title}`} url={link} />
                   <Button asChild variant="outline" size="sm">
                     <a href={whatsapp} target="_blank" rel="noopener noreferrer">Partager sur WhatsApp</a>
                   </Button>
@@ -603,6 +614,28 @@ export function Editor({ invitation, template, initialContent, rsvps, guests, me
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Barre d'actions du bas (téléphone) */}
+      {editable && (
+        <div
+          className="bg-background/95 fixed inset-x-0 bottom-0 z-40 border-t px-3 pt-3 backdrop-blur md:hidden"
+          style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+        >
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" size="lg" onClick={() => go(tab === "apercu" ? "contenu" : "apercu")}>
+              {tab === "apercu" ? <Pencil /> : <Eye />} {tab === "apercu" ? "Modifier" : "Aperçu"}
+            </Button>
+            <Button type="button" variant={status === "draft" ? "outline" : "default"} size="lg" className="flex-1" onClick={() => save()} disabled={saving || publishing}>
+              {saving ? <Loader2 className="animate-spin" /> : <Save />} Enregistrer
+            </Button>
+            {status === "draft" && (
+              <Button type="button" size="lg" className="flex-1" onClick={publish} disabled={saving || publishing}>
+                {publishing ? <Loader2 className="animate-spin" /> : <Send />} Publier
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Aperçu en direct (grand écran) */}
       <aside className="hidden lg:block">

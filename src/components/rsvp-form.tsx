@@ -33,7 +33,7 @@ export function RsvpForm({ slug, template, deadline, guest, answered = null, dri
     color: p.fg,
     border: `1px solid ${p.accent}66`,
   } as const;
-  const inputCls = "w-full rounded-lg px-3 py-2.5 text-sm outline-none placeholder:opacity-50 focus:ring-2";
+  const inputCls = "w-full rounded-lg px-3.5 py-3 text-base outline-none placeholder:opacity-50 focus:ring-2";
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -100,7 +100,7 @@ export function RsvpForm({ slug, template, deadline, guest, answered = null, dri
       type="button"
       onClick={() => setAttendance(v)}
       aria-pressed={attendance === v}
-      className="flex-1 rounded-full px-3 py-2.5 text-sm font-medium transition-colors"
+      className="min-h-11 flex-1 rounded-full px-3 py-2.5 text-sm font-medium transition-colors active:scale-[0.98]"
       style={
         attendance === v
           ? { background: p.accent, color: p.bg, border: `1px solid ${p.accent}` }
@@ -140,7 +140,7 @@ export function RsvpForm({ slug, template, deadline, guest, answered = null, dri
         {attendance !== "no" && (
           <label className="flex items-center justify-between gap-3 text-sm">
             <span>Nombre de personnes</span>
-            <select name="partySize" defaultValue="1" className="rounded-lg px-3 py-2 text-sm" style={{ ...field, background: p.surface }}>
+            <select name="partySize" defaultValue="1" className="min-h-11 rounded-lg px-3 py-2 text-base" style={{ ...field, background: p.surface }}>
               {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
                 <option key={n} value={n}>
                   {n}
@@ -152,7 +152,7 @@ export function RsvpForm({ slug, template, deadline, guest, answered = null, dri
         {attendance !== "no" && drinks.length > 0 && (
           <label className="flex items-center justify-between gap-3 text-sm">
             <span>Boisson souhaitée</span>
-            <select name="drink" defaultValue="" className="max-w-[60%] rounded-lg px-3 py-2 text-sm" style={{ ...field, background: p.surface }}>
+            <select name="drink" defaultValue="" className="min-h-11 max-w-[60%] rounded-lg px-3 py-2 text-base" style={{ ...field, background: p.surface }}>
               <option value="">Pas de préférence</option>
               {drinks.map((d) => (
                 <option key={d} value={d}>
@@ -172,7 +172,7 @@ export function RsvpForm({ slug, template, deadline, guest, answered = null, dri
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold disabled:opacity-60"
+          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-base font-semibold disabled:opacity-60"
           style={{ background: p.accent, color: p.bg }}
         >
           {loading && <Loader2 className="size-4 animate-spin" />}

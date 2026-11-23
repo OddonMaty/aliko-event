@@ -4,6 +4,7 @@ import { cache } from "react";
 import { Guestbook, type GuestbookMessage } from "@/components/guestbook";
 import { GuestPass } from "@/components/guest-pass";
 import { InvitationView } from "@/components/invitation/invitation-view";
+import { InviteShortcut } from "@/components/invitation/shortcut";
 import { ReportButton } from "@/components/report-button";
 import { RsvpForm } from "@/components/rsvp-form";
 import { TIER_INFO, type Tier } from "@/lib/catalog";
@@ -86,17 +87,28 @@ export default async function InvitationPage({ params, searchParams }: Props) {
     notes = rows.map((m) => ({ ...m, created_at: new Date(m.created_at).toISOString() }));
   }
 
+  // Raccourci flottant : répondre tant que ce n'est pas fait, sinon retrouver son pass d'entrée.
+  const shortcut =
+    content.rsvpEnabled && !answered ? { id: "rsvp", label: "Répondre à l'invitation" } : guest ? { id: "pass", label: "Mon pass d'entrée" } : null;
+
   return (
-    <main className="min-h-screen" style={{ background: template.palette.bg }}>
+    <main className="min-h-dvh pb-24" style={{ background: template.palette.bg }}>
       <div className="mx-auto max-w-xl">
         <InvitationView content={content} template={template} brand={!TIER_INFO[inv.tier].brandingFree} guestName={guest?.name}>
           {content.rsvpEnabled && (
-            <RsvpForm slug={inv.slug} template={template} deadline={content.rsvpDeadline || undefined} guest={guest} answered={answered} drinks={content.drinksEnabled ? content.drinks : []} />
+            <div id="rsvp" className="scroll-mt-4">
+              <RsvpForm slug={inv.slug} template={template} deadline={content.rsvpDeadline || undefined} guest={guest} answered={answered} drinks={content.drinksEnabled ? content.drinks : []} />
+            </div>
           )}
           {content.guestbookEnabled && <Guestbook slug={inv.slug} template={template} guest={guest} initial={notes} />}
-          {guest && <GuestPass token={guest.token} name={guest.name} date={formatDateFr(content.date, "full")} template={template} />}
+          {guest && (
+            <div id="pass" className="scroll-mt-4">
+              <GuestPass token={guest.token} name={guest.name} date={formatDateFr(content.date, "full")} template={template} />
+            </div>
+          )}
         </InvitationView>
         <ReportButton slug={inv.slug} color={template.palette.muted} />
+        {shortcut && <InviteShortcut targetId={shortcut.id} label={shortcut.label} accent={template.palette.accent} bg={template.palette.bg} />}
       </div>
     </main>
   );

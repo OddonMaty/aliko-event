@@ -38,13 +38,13 @@ export default async function DashboardPage() {
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-4xl px-4 py-12">
+      <main className="mx-auto max-w-4xl px-4 py-6 md:py-12">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl font-semibold">Mes invitations</h1>
             <p className="text-muted-foreground mt-1 text-sm">Bonjour {user.name}.</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="hidden items-center gap-2 md:flex">
             {user.role === "admin" && (
               <Button asChild variant="outline" size="sm">
                 <Link href="/admin">Administration</Link>
@@ -58,6 +58,13 @@ export default async function DashboardPage() {
             <LogoutButton />
           </div>
         </div>
+
+        {/* Bouton d'action flottant (téléphone) */}
+        <Button asChild size="lg" className="fixed right-4 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] z-30 h-14 rounded-full px-5 shadow-lg md:hidden">
+          <Link href="/modeles">
+            <Plus /> Nouvelle invitation
+          </Link>
+        </Button>
 
         {rows.length === 0 ? (
           <Card>
@@ -93,7 +100,7 @@ export default async function DashboardPage() {
                         </p>
                       )}
                     </div>
-                    <Button asChild variant={r.status === "awaiting_payment" ? "outline" : "default"} size="sm">
+                    <Button asChild variant={r.status === "awaiting_payment" ? "outline" : "default"} size="sm" className="w-full sm:w-auto">
                       <Link href={href}>{r.status === "awaiting_payment" ? "Voir le paiement" : "Gérer"}</Link>
                     </Button>
                   </CardContent>

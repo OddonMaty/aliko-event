@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Check } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -25,12 +25,25 @@ export function PurchasePanel({
   const [category, setCategory] = useState(initialCategory);
   const [tier, setTier] = useState<Tier>("standard");
   const [guests, setGuests] = useState<GuestLimit>(BASE_GUESTS);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const [panelInView, setPanelInView] = useState(true);
+  useEffect(() => {
+    const el = panelRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(([entry]) => setPanelInView(entry.isIntersecting), { threshold: 0.1 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
   const current = categories.find((c) => c.id === category) ?? categories[0];
   const extra = guestExtraCents(current.extraGuestCents, guests);
   const priceOf = (t: Tier) => current.prices[t] + extra;
   const price = priceOf(tier);
 
+  const cheapest = Math.min(...TIERS.map(priceOf));
+
   return (
+    <>
+    <div ref={panelRef} className="scroll-mt-20">
     <Card>
       <CardHeader>
         <CardTitle>Choisissez votre formule</CardTitle>
@@ -121,5 +134,30 @@ export function PurchasePanel({
         </p>
       </CardContent>
     </Card>
+    </div>
+
+    {/* Barre d'achat fixe (téléphone) : mène au choix de la formule */}
+    <div
+      className="bg-background/95 fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t px-4 pt-3 backdrop-blur transition-transform duration-300 lg:hidden"
+      style={{
+        paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
+        transform: panelInView ? "translateY(100%)" : "translateY(0)",
+      }}
+      aria-hidden={panelInView}
+    >
+      <div className="min-w-0 flex-1">
+        <p className="text-muted-foreground text-xs">À partir de</p>
+        <p className="text-primary font-serif text-xl leading-none font-semibold">{formatUsdCents(cheapest)}</p>
+      </div>
+      <Button
+        type="button"
+        size="lg"
+        tabIndex={panelInView ? -1 : 0}
+        onClick={() => panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+      >
+        Choisir ma formule
+      </Button>
+    </div>
+    </>
   );
 }

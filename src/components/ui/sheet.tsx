@@ -21,15 +21,19 @@ function SheetClose({ ...props }: React.ComponentProps<typeof SheetPrimitive.Clo
 function SheetContent({
   className,
   children,
+  side = "right",
   ...props
-}: React.ComponentProps<typeof SheetPrimitive.Content>) {
+}: React.ComponentProps<typeof SheetPrimitive.Content> & { side?: "right" | "bottom" }) {
   return (
     <SheetPrimitive.Portal>
       <SheetPrimitive.Overlay data-slot="sheet-overlay" className="fixed inset-0 z-50 bg-black/60" />
       <SheetPrimitive.Content
         data-slot="sheet-content"
+        data-side={side}
         className={cn(
-          "bg-background fixed inset-y-0 right-0 z-50 flex h-full w-[85%] max-w-sm flex-col gap-4 border-l p-6 shadow-xl",
+          "bg-background fixed z-50 flex flex-col gap-4 shadow-xl",
+          side === "right" && "inset-y-0 right-0 h-full w-[85%] max-w-sm border-l p-6",
+          side === "bottom" && "inset-x-0 bottom-0 max-h-[88dvh] overflow-y-auto rounded-t-2xl border-t px-5 pt-3 pb-[calc(1.25rem+env(safe-area-inset-bottom))]",
           className,
         )}
         {...props}

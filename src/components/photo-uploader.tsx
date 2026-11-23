@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 
 /** Redimensionne et compresse l'image dans le navigateur (max 1600 px, JPEG) : rapide et léger, et retire les métadonnées (EXIF/GPS). */
 async function compress(file: File): Promise<Blob> {
-  const bitmap = await createImageBitmap(file);
+  const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
   const scale = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
   canvas.width = Math.round(bitmap.width * scale);
@@ -76,16 +76,16 @@ export function PhotoUploader({
             <button
               type="button"
               aria-label="Retirer la photo"
-              className="bg-background/90 absolute top-1 right-1 rounded-full p-1 shadow"
+              className="bg-background/90 absolute top-1 right-1 flex size-8 items-center justify-center rounded-full shadow"
               onClick={() => onChange(photos.filter((p) => p !== src))}
             >
-              <X className="size-3" />
+              <X className="size-4" />
             </button>
           </div>
         ))}
       </div>
       <input ref={input} type="file" accept="image/jpeg,image/png,image/webp" multiple hidden onChange={(e) => onFiles(e.target.files)} />
-      <Button type="button" variant="outline" disabled={busy || photos.filter((p) => !isSample(p)).length >= max} onClick={() => input.current?.click()}>
+      <Button type="button" variant="outline" className="w-full sm:w-auto" disabled={busy || photos.filter((p) => !isSample(p)).length >= max} onClick={() => input.current?.click()}>
         {busy ? <Loader2 className="animate-spin" /> : <ImagePlus />}
         Ajouter des photos ({photos.filter((p) => !isSample(p)).length}/{max})
       </Button>

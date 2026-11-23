@@ -56,7 +56,7 @@ export function CheckoutForm(p: Props) {
   }
 
   const choice = (active: boolean) =>
-    cn("flex-1 rounded-lg border p-3 text-sm font-medium transition-colors", active ? "border-primary bg-accent/40 ring-primary/40 ring-1" : "hover:bg-accent/20");
+    cn("min-h-12 flex-1 rounded-lg border p-3 text-sm font-medium transition-colors active:scale-[0.98]", active ? "border-primary bg-accent/40 ring-primary/40 ring-1" : "hover:bg-accent/20");
 
   return (
     <form onSubmit={pay} className="space-y-6">
@@ -163,7 +163,7 @@ export function CheckoutForm(p: Props) {
               .
             </span>
           </label>
-          <Button type="submit" size="lg" className="w-full" disabled={loading || !accepted}>
+          <Button type="submit" size="lg" className="sticky bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-10 w-full shadow-lg md:static md:shadow-none" disabled={loading || !accepted}>
             {loading && <Loader2 className="animate-spin" />}
             {p.testMode ? "Continuer vers le paiement simulé" : `Payer ${formatMoney(amount, currency)}`}
           </Button>

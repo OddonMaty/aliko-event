@@ -47,19 +47,19 @@ export default function HomePage() {
       <SiteHeader />
       <main>
         {/* Hero : l'invitation elle-même, sur un téléphone */}
-        <section className="mx-auto grid max-w-6xl items-center gap-12 px-5 pt-14 pb-20 lg:grid-cols-[1.15fr_0.85fr] lg:pt-20 lg:pb-28">
+        <section className="mx-auto grid max-w-6xl items-center gap-10 px-5 pt-8 pb-14 lg:grid-cols-[1.15fr_0.85fr] lg:pt-20 lg:pb-28">
           <div>
-            <h1 className="max-w-[14ch] text-[3.4rem] leading-[0.98] text-balance sm:text-7xl lg:text-[5.5rem]">
+            <h1 className="max-w-[14ch] text-[2.8rem] leading-[1] text-balance sm:text-7xl lg:text-[5.5rem]">
               Une invitation qui s'ouvre sur le téléphone de chaque invité.
             </h1>
             <p className="text-muted-foreground mt-7 max-w-md text-lg leading-relaxed">
               Choisissez un design, ajoutez vos photos, le lieu et le programme. Vous recevez un lien et un QR code à partager, et vos invités répondent d'un geste.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-3">
-              <Button asChild size="lg">
+              <Button asChild size="lg" className="w-full sm:w-auto">
                 <Link href="/modeles">Voir les modèles</Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
+              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
                 <Link href="#comment">Comment ça marche</Link>
               </Button>
             </div>
@@ -92,7 +92,7 @@ export default function HomePage() {
         <Separator />
 
         {/* Événements : petites cartes avec le nombre de modèles */}
-        <section className="mx-auto max-w-6xl px-5 py-20 lg:py-28">
+        <section className="mx-auto max-w-6xl px-5 py-14 lg:py-28">
           <div className="mb-12 max-w-xl">
             <h2 className="text-4xl sm:text-5xl">Pour quel événement ?</h2>
             <p className="text-muted-foreground mt-4">Chaque type d&apos;événement a ses textes d&apos;exemple, ses designs et son tarif.</p>
@@ -120,7 +120,7 @@ export default function HomePage() {
         <Separator />
 
         {/* Designs */}
-        <section className="mx-auto max-w-6xl px-5 py-20 lg:py-28">
+        <section className="mx-auto max-w-6xl px-5 py-14 lg:py-28">
           <div className="mb-12 flex flex-wrap items-end justify-between gap-4">
             <h2 className="text-4xl sm:text-5xl">Nos designs</h2>
             <Button asChild variant="outline">
@@ -137,7 +137,7 @@ export default function HomePage() {
         <Separator />
 
         {/* Étapes : une vraie séquence */}
-        <section id="comment" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-20 lg:py-28">
+        <section id="comment" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-14 lg:py-28">
           <h2 className="max-w-xl text-4xl sm:text-5xl">De l'idée au lien partagé, en quatre étapes.</h2>
           <ol className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((s, i) => (
@@ -153,7 +153,7 @@ export default function HomePage() {
         <Separator />
 
         {/* Tarifs */}
-        <section id="tarifs" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-20 lg:py-28">
+        <section id="tarifs" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-14 lg:py-28">
           <div className="mb-12 max-w-xl">
             <h2 className="text-4xl sm:text-5xl">Un prix, payé une seule fois.</h2>
             <p className="text-muted-foreground mt-4">

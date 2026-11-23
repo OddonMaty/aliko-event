@@ -28,6 +28,7 @@ export function Scanner({ invitationId, initialGuests }: { invitationId: string;
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const wakeRef = useRef<{ release: () => Promise<void> } | null>(null);
   const timerRef = useRef<number | null>(null);
   const busyRef = useRef(false);
   const lastRef = useRef<{ code: string; at: number }>({ code: "", at: 0 });
@@ -44,6 +45,8 @@ export function Scanner({ invitationId, initialGuests }: { invitationId: string;
     timerRef.current = null;
     streamRef.current?.getTracks().forEach((t) => t.stop());
     streamRef.current = null;
+    void wakeRef.current?.release().catch(() => undefined);
+    wakeRef.current = null;
     setRunning(false);
   }, []);
 
@@ -115,6 +118,13 @@ export function Scanner({ invitationId, initialGuests }: { invitationId: string;
       await video.play();
       setRunning(true);
       timerRef.current = window.setInterval(tick, 150);
+      // Garde l'écran allumé pendant le contrôle des entrées (si le navigateur le permet).
+      try {
+        const nav = navigator as Navigator & { wakeLock?: { request: (type: "screen") => Promise<{ release: () => Promise<void> }> } };
+        wakeRef.current = (await nav.wakeLock?.request("screen")) ?? null;
+      } catch {
+        wakeRef.current = null;
+      }
     } catch (e) {
       stop();
       const denied = e instanceof DOMException && (e.name === "NotAllowedError" || e.name === "SecurityError");
@@ -153,33 +163,18 @@ export function Scanner({ invitationId, initialGuests }: { invitationId: string;
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className={cn("bg-muted relative aspect-[4/3] w-full overflow-hidden rounded-xl", !running && "hidden")}>
+          <div className={cn("bg-muted relative aspect-[3/4] w-full overflow-hidden rounded-2xl sm:aspect-[4/3]", !running && "hidden")}>
             <video ref={videoRef} playsInline muted className="size-full object-cover" />
-            <div className="pointer-events-none absolute inset-[18%] rounded-2xl border-2 border-white/80" aria-hidden />
+            <div className="pointer-events-none absolute inset-[16%] rounded-3xl border-[3px] border-white/85 shadow-[0_0_0_9999px_rgba(0,0,0,0.38)]" aria-hidden />
           </div>
           <canvas ref={canvasRef} className="hidden" />
-
-          {running ? (
-            <Button type="button" variant="outline" onClick={stop}>
-              <CameraOff /> Arrêter la caméra
-            </Button>
-          ) : (
-            <Button type="button" onClick={start}>
-              <Camera /> Démarrer la caméra
-            </Button>
-          )}
-          {camError && (
-            <p role="alert" className="text-destructive text-sm">
-              {camError}
-            </p>
-          )}
 
           {result && (
             <div
               role="status"
               aria-live="polite"
               className={cn(
-                "flex items-start gap-3 rounded-xl border p-4",
+                "flex items-start gap-3 rounded-2xl border-2 p-4 text-base",
                 result.kind === "ok" && "border-success/60 bg-success/10",
                 result.kind === "already" && "border-primary/60 bg-primary/10",
                 result.kind === "error" && "border-destructive/60 bg-destructive/10",
@@ -193,13 +188,13 @@ export function Scanner({ invitationId, initialGuests }: { invitationId: string;
               <div>
                 {result.kind === "ok" && (
                   <>
-                    <p className="font-medium">Entrée validée : {result.name}</p>
+                    <p className="text-lg font-semibold">Entrée validée : {result.name}</p>
                     {result.party && result.party > 1 && <p className="text-muted-foreground text-sm">{result.party} personnes annoncées</p>}
                   </>
                 )}
                 {result.kind === "already" && (
                   <>
-                    <p className="font-medium">Déjà entré(e) : {result.name}</p>
+                    <p className="text-lg font-semibold">Déjà entré(e) : {result.name}</p>
                     <p className="text-muted-foreground text-sm">
                       Pass déjà scanné à {new Date(result.at).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}.
                     </p>
@@ -209,6 +204,22 @@ export function Scanner({ invitationId, initialGuests }: { invitationId: string;
               </div>
             </div>
           )}
+
+          {running ? (
+            <Button type="button" variant="outline" size="lg" className="w-full" onClick={stop}>
+              <CameraOff /> Arrêter la caméra
+            </Button>
+          ) : (
+            <Button type="button" size="lg" className="w-full" onClick={start}>
+              <Camera /> Démarrer la caméra
+            </Button>
+          )}
+          {camError && (
+            <p role="alert" className="text-destructive text-sm">
+              {camError}
+            </p>
+          )}
+
         </CardContent>
       </Card>
 

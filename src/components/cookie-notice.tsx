@@ -22,7 +22,7 @@ export function CookieNotice() {
   if (!visible) return null;
 
   return (
-    <div role="region" aria-label="Information sur les cookies" className="bg-card fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-xl flex-col gap-3 rounded-xl border p-4 shadow-xl sm:flex-row sm:items-center">
+    <div role="region" aria-label="Information sur les cookies" className="cookie-notice bg-card fixed inset-x-3 z-50 mx-auto flex max-w-xl flex-col gap-3 rounded-xl border p-4 shadow-xl sm:flex-row sm:items-center">
       <p className="text-sm leading-relaxed">
         Nous n&apos;utilisons que des cookies indispensables au fonctionnement du site, sans publicité ni suivi.{" "}
         <Link href="/cookies" className="text-primary underline-offset-4 hover:underline">
