@@ -14,7 +14,7 @@ import { appUrl, formatDateFr } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Personnaliser", robots: { index: false } };
 
-export default async function EditorPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function EditorPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string }> }) {
   const { id } = await params;
   const user = await requireUser(`/tableau-de-bord/${id}`);
 
@@ -66,6 +66,7 @@ export default async function EditorPage({ params }: { params: Promise<{ id: str
           </div>
         )}
         <Editor
+          initialTab={["contenu", "photos", "partage", "invites", "reponses"].includes((await searchParams).tab ?? "") ? (await searchParams).tab : undefined}
           invitation={{ id: inv.id, slug: inv.slug, status: inv.status as "draft" | "published" | "suspended" | "archived", tier: inv.tier, guestLimit: inv.guest_limit }}
           template={template}
           initialContent={content}

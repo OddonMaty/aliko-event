@@ -3,6 +3,7 @@ import { z } from "zod";
 import { q } from "@/lib/db";
 import { handle, json, readJson } from "@/lib/http";
 import { findGuest } from "@/lib/guests";
+import { notifyRsvp } from "@/lib/notify";
 import { parseStoredContent } from "@/lib/invitations";
 import { assertSameOrigin, clientIp, hashIp, HttpError, rateLimit, verifyTurnstile } from "@/lib/security";
 
@@ -54,6 +55,7 @@ export const POST = handle(async (req) => {
             ON CONFLICT (guest_id) WHERE guest_id IS NOT NULL
             DO UPDATE SET attendance = EXCLUDED.attendance, party_size = EXCLUDED.party_size, message = EXCLUDED.message,
                           phone = EXCLUDED.phone, email = EXCLUDED.email, drink = EXCLUDED.drink, ip_hash = EXCLUDED.ip_hash, created_at = now()`;
+    await notifyRsvp(inv.id, { name: guest.name, phone, email: body.email || null, attendance: body.attendance, partySize: body.partySize, message: body.message || null, drink }, false);
     return json({ ok: true });
   }
 
@@ -67,6 +69,7 @@ export const POST = handle(async (req) => {
     await q`UPDATE rsvps SET attendance = ${body.attendance}, party_size = ${body.partySize},
               message = ${body.message || null}, email = ${body.email || null}, drink = ${drink}, ip_hash = ${ipHash}, created_at = now()
             WHERE id = ${existing[0].id}`;
+    await notifyRsvp(inv.id, { name: body.name, phone, email: body.email || null, attendance: body.attendance, partySize: body.partySize, message: body.message || null, drink }, true);
     return json({ ok: true, updated: true });
   }
 
@@ -77,5 +80,6 @@ export const POST = handle(async (req) => {
 
   await q`INSERT INTO rsvps (invitation_id, name, phone, email, attendance, party_size, message, drink, ip_hash)
           VALUES (${inv.id}, ${body.name}, ${phone}, ${body.email || null}, ${body.attendance}, ${body.partySize}, ${body.message || null}, ${drink}, ${ipHash})`;
+  await notifyRsvp(inv.id, { name: body.name, phone, email: body.email || null, attendance: body.attendance, partySize: body.partySize, message: body.message || null, drink }, false);
   return json({ ok: true });
 });

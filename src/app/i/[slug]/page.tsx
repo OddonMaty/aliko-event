@@ -1,3 +1,4 @@
+import { sampleUrl } from "@/lib/samples";
 import type { Metadata } from "next";
 import { cache } from "react";
 
@@ -33,7 +34,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const inv = await load(slug).catch(() => null);
   if (!inv || inv.status !== "published") return { ...base, title: "Invitation" };
   const c = parseStoredContent(inv.content);
-  const image = c.photos.find(isAllowedImageUrl);
+  const found = c.photos.find(isAllowedImageUrl);
+  const image = found ? sampleUrl(found) : undefined;
   return {
     ...base,
     title: c.title,

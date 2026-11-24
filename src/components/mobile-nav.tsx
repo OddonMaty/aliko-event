@@ -16,7 +16,7 @@ interface Props {
 }
 
 /** Écrans de premier niveau : la barre du bas n'y apparaît que là, comme dans une application. */
-const TOP_LEVEL = ["/", "/modeles", "/tableau-de-bord", "/admin", "/cgu", "/confidentialite", "/remboursement", "/cookies"];
+const TOP_LEVEL = ["/", "/modeles", "/tableau-de-bord", "/notifications", "/admin", "/cgu", "/confidentialite", "/remboursement", "/cookies"];
 
 const TABS = [
   { href: "/", label: "Accueil", icon: Home },

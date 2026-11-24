@@ -1,5 +1,6 @@
 "use client";
 
+import { sampleUrl } from "@/lib/samples";
 import { useRef, useState } from "react";
 import { ImagePlus, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
@@ -71,7 +72,7 @@ export function PhotoUploader({
         {photos.map((src, i) => (
           <div key={src} className="group relative aspect-square overflow-hidden rounded-md border">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt="" className="size-full object-cover" />
+            <img src={sampleUrl(src, 400)} alt="" className="size-full object-cover" onError={(e) => { if (e.currentTarget.src !== new URL(src, location.href).href) e.currentTarget.src = src; }} />
             {i === 0 && <span className="bg-primary text-primary-foreground absolute bottom-1 left-1 rounded px-1.5 text-[10px]">Couverture</span>}
             <button
               type="button"

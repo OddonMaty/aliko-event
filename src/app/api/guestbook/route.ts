@@ -3,6 +3,7 @@ import { z } from "zod";
 import { q } from "@/lib/db";
 import { findGuest } from "@/lib/guests";
 import { handle, json, readJson } from "@/lib/http";
+import { notifyGuestbook } from "@/lib/notify";
 import { parseStoredContent } from "@/lib/invitations";
 import { assertSameOrigin, clientIp, hashIp, HttpError, rateLimit, verifyTurnstile } from "@/lib/security";
 
@@ -51,5 +52,6 @@ export const POST = handle(async (req) => {
     INSERT INTO guestbook (invitation_id, guest_id, name, message, ip_hash)
     VALUES (${inv.id}, ${guest?.id ?? null}, ${name}, ${body.message}, ${ipHash})
     RETURNING id, created_at`;
+  await notifyGuestbook(inv.id, name, body.message);
   return json({ ok: true, message: { id: saved[0]!.id, name, message: body.message, created_at: new Date(saved[0]!.created_at).toISOString() } });
 });

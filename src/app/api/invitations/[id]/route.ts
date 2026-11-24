@@ -1,3 +1,4 @@
+import { isSampleToken } from "@/lib/samples";
 import { z } from "zod";
 
 import { requireApiUser } from "@/lib/auth";
@@ -31,6 +32,7 @@ export const PUT = handle(async (req, ctx) => {
 
   // Les photos doivent avoir été téléversées pour CETTE invitation.
   for (const url of content.photos) {
+    if (isSampleToken(url)) continue;
     if (!new URL(url).pathname.startsWith(`/inv/${inv.id}/`)) throw new HttpError(400, "Photo non autorisée");
   }
 

@@ -4,11 +4,14 @@ import { Brand } from "@/components/brand";
 import { MobileTabBar } from "@/components/mobile-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/user-menu";
+import { Bell } from "lucide-react";
+import { unreadCount } from "@/lib/notify";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
 
 export async function SiteHeader() {
   const user = await getCurrentUser().catch(() => null);
+  const unread = user ? await unreadCount(user.id) : 0;
   return (
     <>
     <header className="bg-background/85 sticky top-0 z-40 border-b pt-[env(safe-area-inset-top)] backdrop-blur">
@@ -23,6 +26,16 @@ export async function SiteHeader() {
           <div className="hidden md:block">
             <ThemeToggle />
           </div>
+          {user && (
+            <Link href="/notifications" aria-label={unread ? `Notifications, ${unread} nouvelle(s)` : "Notifications"} className="hover:bg-accent relative inline-flex size-11 items-center justify-center rounded-full md:size-9">
+              <Bell className="size-5" />
+              {unread > 0 && (
+                <span className="bg-primary text-primary-foreground absolute top-1 right-1 flex min-w-4 items-center justify-center rounded-full px-1 text-[10px] leading-4 font-semibold">
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              )}
+            </Link>
+          )}
           {user ? (
             <div className="hidden md:block">
               <UserMenu name={user.name} email={user.email} isAdmin={user.role === "admin"} />

@@ -128,3 +128,17 @@ CREATE INDEX guestbook_invitation_idx ON guestbook (invitation_id, created_at DE
 
 ALTER TABLE rsvps ADD COLUMN guest_id uuid REFERENCES guests(id) ON DELETE SET NULL;
 CREATE UNIQUE INDEX rsvps_guest_uidx ON rsvps (guest_id) WHERE guest_id IS NOT NULL;
+
+-- Notifications de l'organisateur (réponses des invités, mots doux)
+CREATE TABLE notifications (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  invitation_id uuid NOT NULL REFERENCES invitations(id) ON DELETE CASCADE,
+  kind text NOT NULL CHECK (kind IN ('rsvp','rsvp_update','guestbook')),
+  title text NOT NULL,
+  payload jsonb NOT NULL DEFAULT '{}'::jsonb,
+  read_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX notifications_user_idx ON notifications (user_id, created_at DESC);
+CREATE INDEX notifications_unread_idx ON notifications (user_id) WHERE read_at IS NULL;

@@ -43,6 +43,7 @@ export interface MessageItem {
 }
 
 interface Props {
+  initialTab?: string;
   invitation: { id: string; slug: string; status: "draft" | "published" | "suspended" | "archived"; tier: Tier; guestLimit: number };
   template: Template;
   initialContent: InvitationContent;
@@ -68,7 +69,7 @@ function Field({ id, label, hint, children }: { id: string; label: string; hint?
   );
 }
 
-export function Editor({ invitation, template, initialContent, rsvps, guests, messages, baseUrl }: Props) {
+export function Editor({ initialTab, invitation, template, initialContent, rsvps, guests, messages, baseUrl }: Props) {
   const router = useRouter();
   const [hiding, setHiding] = useState<string | null>(null);
   const [customDrink, setCustomDrink] = useState("");
@@ -79,7 +80,7 @@ export function Editor({ invitation, template, initialContent, rsvps, guests, me
   const [status, setStatus] = useState(invitation.status);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
-  const [tab, setTab] = useState("contenu");
+  const [tab, setTab] = useState(initialTab ?? "contenu");
   const go = (value: string) => {
     setTab(value);
     window.scrollTo({ top: 0 });

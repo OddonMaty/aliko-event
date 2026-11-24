@@ -1,3 +1,4 @@
+import { SafeImg } from "./safe-img";
 import type { CSSProperties, ReactNode } from "react";
 import { CalendarDays, Clock, MapPin, Navigation, Phone, Shirt } from "lucide-react";
 
@@ -33,8 +34,7 @@ function Ornament({ p }: { p: Palette }) {
 
 function Photo({ src, className, style }: { src: string; className?: string; style?: CSSProperties }) {
   if (!isAllowedImageUrl(src)) return null;
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={src} alt="" loading="lazy" className={className} style={style} />;
+  return <SafeImg src={src} className={className} style={style} />;
 }
 
 function dateTime(c: InvitationContent) {
