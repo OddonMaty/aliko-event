@@ -87,7 +87,7 @@ export const contentSchema = z.object({
 
 export type InvitationContent = z.infer<typeof contentSchema>;
 
-export function sampleContent(categoryId: CategoryId): InvitationContent {
+export function sampleContent(categoryId: CategoryId, drinkDefaults: readonly string[] = DEFAULT_DRINKS): InvitationContent {
   const c = getCategory(categoryId);
   if (!c) throw new Error("Catégorie inconnue");
   return {
@@ -109,7 +109,7 @@ export function sampleContent(categoryId: CategoryId): InvitationContent {
     guestbookEnabled: true,
     showMap: true,
     drinksEnabled: DRINK_CATEGORIES.includes(c.id),
-    drinks: DRINK_CATEGORIES.includes(c.id) ? DEFAULT_DRINKS : [],
+    drinks: DRINK_CATEGORIES.includes(c.id) ? [...drinkDefaults] : [],
   };
 }
 
@@ -139,3 +139,18 @@ export const customSlugSchema = z
   .toLowerCase()
   .regex(/^[a-z0-9](?:[a-z0-9-]{2,38})[a-z0-9]$/, "3 à 40 caractères : lettres minuscules, chiffres et tirets")
   .refine((s) => !RESERVED_SLUGS.has(s), "Ce lien est réservé");
+
+/** Applique les réglages de l'administration : une section désactivée n'apparaît plus, quoi que dise le contenu enregistré. */
+export function applySections(
+  content: InvitationContent,
+  sections: { guestbook: boolean; map: boolean; drinks: boolean },
+  maxDrinks: number,
+): InvitationContent {
+  return {
+    ...content,
+    guestbookEnabled: content.guestbookEnabled && sections.guestbook,
+    showMap: content.showMap && sections.map,
+    drinksEnabled: content.drinksEnabled && sections.drinks,
+    drinks: content.drinks.slice(0, maxDrinks),
+  };
+}

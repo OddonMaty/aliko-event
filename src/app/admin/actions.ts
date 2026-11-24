@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { requireAdmin } from "@/lib/admin";
 import { q } from "@/lib/db";
@@ -8,6 +9,8 @@ import { isUuid } from "@/lib/invitations";
 import { settleOrder, type OrderRow } from "@/lib/orders";
 import { deletePhotos } from "@/lib/purge";
 import { audit } from "@/lib/security";
+import { TIERS } from "@/lib/catalog";
+import { getSettings, invalidateSettings, saveSettings } from "@/lib/settings";
 
 function id(fd: FormData, key: string): string {
   const v = String(fd.get(key) ?? "");
@@ -85,4 +88,58 @@ export async function purgeStaleDrafts() {
   }
   await audit(admin.id, "admin.purge_stale_drafts", undefined, undefined, { count: rows.length });
   revalidatePath("/admin/systeme");
+}
+
+/* ───────── Réglages (prix, formules, boissons, sections) ───────── */
+
+const num = (v: FormDataEntryValue | null) => Number(String(v ?? "").replace(",", ".").trim());
+const cents = (v: FormDataEntryValue | null) => Math.round(num(v) * 100);
+
+export async function updateSettings(fd: FormData) {
+  const admin = await requireAdmin();
+  const section = String(fd.get("section") ?? "");
+  const next = structuredClone(await getSettings());
+
+  if (section === "prix") {
+    for (const id of Object.keys(next.prices)) {
+      for (const t of TIERS) {
+        const c = cents(fd.get(`price:${id}:${t}`));
+        if (!Number.isFinite(c) || c < 100) throw new Error(`Prix invalide (${id}, ${t}) : minimum 1 $`);
+        next.prices[id]![t] = c;
+      }
+      const extra = cents(fd.get(`extra:${id}`));
+      if (!Number.isFinite(extra) || extra < 0) throw new Error(`Supplément invalide (${id})`);
+      next.prices[id]!.extraGuestCents = extra;
+    }
+    const limits = String(fd.get("guestLimits") ?? "").split(/[\s,;]+/).map(Number).filter((n) => Number.isFinite(n) && n > 0);
+    if (limits.length === 0) throw new Error("Indiquez au moins un palier d'invités");
+    next.guestLimits = limits;
+  } else if (section === "formules") {
+    for (const t of TIERS) {
+      next.tiers[t].maxPhotos = num(fd.get(`photos:${t}`));
+      next.tiers[t].maxProgram = num(fd.get(`program:${t}`));
+    }
+  } else if (section === "boissons") {
+    next.drinks.presets = String(fd.get("presets") ?? "").split("\n");
+    next.drinks.max = num(fd.get("max"));
+    next.drinks.defaults = next.drinks.presets.map((p) => p.trim()).filter((p) => fd.get(`default:${p}`) === "on");
+  } else if (section === "invites") {
+    next.rsvp.maxPartySize = num(fd.get("maxPartySize"));
+    next.sections.guestbook = fd.get("guestbook") === "on";
+    next.sections.map = fd.get("map") === "on";
+    next.sections.drinks = fd.get("drinks") === "on";
+  } else if (section === "reset") {
+    await q`DELETE FROM settings WHERE key = 'app'`;
+    invalidateSettings();
+    await audit(admin.id, "admin.settings.reset", "settings", "app");
+    revalidatePath("/", "layout");
+    redirect("/admin/reglages?saved=reset");
+  } else {
+    throw new Error("Section inconnue");
+  }
+
+  await saveSettings(next, admin.id);
+  await audit(admin.id, `admin.settings.${section}`, "settings", "app");
+  revalidatePath("/", "layout");
+  redirect(`/admin/reglages?saved=${section}`);
 }

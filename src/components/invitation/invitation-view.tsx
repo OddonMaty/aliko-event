@@ -49,21 +49,21 @@ function CoverClassic({ c, t }: { c: InvitationContent; t: Template }) {
   const p = t.palette;
   const { date, time } = dateTime(c);
   return (
-    <section className="px-6 py-16 text-center" style={{ background: p.bg }}>
+    <section className="px-5 py-12 text-center sm:px-6 sm:py-16" style={{ background: p.bg }}>
       {c.photos[0] && (
         <Photo
           src={c.photos[0]}
-          className="mx-auto mb-8 size-40 rounded-full object-cover"
+          className="mx-auto mb-6 size-32 rounded-full sm:mb-8 sm:size-40 object-cover"
           style={{ border: `2px solid ${p.accent}`, padding: 4 }}
         />
       )}
       {c.eyebrow && (
-        <p className="mb-5 text-[11px] tracking-[0.3em] uppercase" style={{ color: p.accent }}>
+        <p className="mb-5 text-[11px] tracking-[0.2em] sm:tracking-[0.3em] uppercase" style={{ color: p.accent }}>
           {c.eyebrow}
         </p>
       )}
       <Ornament p={p} />
-      <h1 className="my-6 text-4xl leading-tight font-semibold sm:text-5xl" style={{ fontFamily: t.fonts.display, color: p.fg }}>
+      <h1 className="my-6 text-[clamp(1.75rem,8.5vw,2.25rem)] leading-tight font-semibold break-words sm:text-5xl" style={{ fontFamily: t.fonts.display, color: p.fg }}>
         {c.title}
       </h1>
       {c.subtitle && (
@@ -94,16 +94,16 @@ function CoverFrame({ c, t }: { c: InvitationContent; t: Template }) {
   return (
     <section className="p-4" style={{ background: p.bg }}>
       <div className="p-1.5" style={{ border: `1px solid ${p.accent}` }}>
-        <div className="px-6 py-14 text-center" style={{ border: `1px solid ${p.accent}66`, background: p.surface }}>
+        <div className="px-5 py-10 text-center sm:px-6 sm:py-14" style={{ border: `1px solid ${p.accent}66`, background: p.surface }}>
           {c.photos[0] && (
             <Photo src={c.photos[0]} className="mx-auto mb-8 aspect-[4/3] w-full max-w-xs object-cover" />
           )}
           {c.eyebrow && (
-            <p className="mb-4 text-[11px] tracking-[0.3em] uppercase" style={{ color: p.accent }}>
+            <p className="mb-4 text-[11px] tracking-[0.2em] sm:tracking-[0.3em] uppercase" style={{ color: p.accent }}>
               {c.eyebrow}
             </p>
           )}
-          <h1 className="text-4xl leading-tight font-semibold sm:text-5xl" style={{ fontFamily: t.fonts.display, color: p.fg }}>
+          <h1 className="text-[clamp(1.75rem,8.5vw,2.25rem)] leading-tight font-semibold break-words sm:text-5xl" style={{ fontFamily: t.fonts.display, color: p.fg }}>
             {c.title}
           </h1>
           {c.subtitle && (
@@ -134,7 +134,7 @@ function CoverArch({ c, t }: { c: InvitationContent; t: Template }) {
   const p = t.palette;
   const { date, time } = dateTime(c);
   return (
-    <section className="px-6 pt-12 pb-14 text-center" style={{ background: p.bg }}>
+    <section className="px-5 pt-10 pb-12 text-center sm:px-6 sm:pt-12 sm:pb-14" style={{ background: p.bg }}>
       <div
         className="mx-auto mb-8 aspect-[3/4] w-56 overflow-hidden rounded-t-full"
         style={{ background: p.surface, border: `1px solid ${p.accent}55` }}
@@ -148,11 +148,11 @@ function CoverArch({ c, t }: { c: InvitationContent; t: Template }) {
         )}
       </div>
       {c.eyebrow && (
-        <p className="mb-3 text-[11px] tracking-[0.3em] uppercase" style={{ color: p.accent }}>
+        <p className="mb-3 text-[11px] tracking-[0.2em] sm:tracking-[0.3em] uppercase" style={{ color: p.accent }}>
           {c.eyebrow}
         </p>
       )}
-      <h1 className="text-4xl leading-tight font-semibold sm:text-5xl" style={{ fontFamily: t.fonts.display, color: p.fg }}>
+      <h1 className="text-[clamp(1.75rem,8.5vw,2.25rem)] leading-tight font-semibold break-words sm:text-5xl" style={{ fontFamily: t.fonts.display, color: p.fg }}>
         {c.title}
       </h1>
       {c.subtitle && (
@@ -179,14 +179,14 @@ function CoverMinimal({ c, t }: { c: InvitationContent; t: Template }) {
   const { date, time } = dateTime(c);
   return (
     <section style={{ background: p.bg }}>
-      <div className="px-8 pt-14 pb-10">
+      <div className="px-5 pt-10 pb-8 sm:px-8 sm:pt-14 sm:pb-10">
         {c.eyebrow && (
-          <p className="mb-6 text-[11px] tracking-[0.3em] uppercase" style={{ color: p.muted }}>
+          <p className="mb-6 text-[11px] tracking-[0.2em] sm:tracking-[0.3em] uppercase" style={{ color: p.muted }}>
             {c.eyebrow}
           </p>
         )}
         <h1
-          className="text-4xl leading-[1.05] font-bold tracking-tight uppercase sm:text-5xl"
+          className="text-[clamp(1.75rem,8.5vw,2.25rem)] leading-[1.05] font-bold tracking-tight break-words uppercase sm:text-5xl"
           style={{ fontFamily: t.fonts.display, color: p.fg }}
         >
           {c.title}
@@ -197,7 +197,7 @@ function CoverMinimal({ c, t }: { c: InvitationContent; t: Template }) {
           </p>
         )}
         <div className="my-8 h-px w-full" style={{ background: p.accent, opacity: 0.5 }} />
-        <div className="grid grid-cols-2 gap-6 text-sm">
+        <div className="grid grid-cols-2 gap-4 text-sm sm:gap-6">
           <div>
             <p className="mb-1 text-[10px] tracking-[0.25em] uppercase" style={{ color: p.muted }}>Date</p>
             <p style={{ color: p.fg }}>{date || "—"}</p>
@@ -220,13 +220,13 @@ function CoverSplit({ c, t }: { c: InvitationContent; t: Template }) {
     <section style={{ background: p.bg }}>
       <div className="flex" style={{ background: p.surface }}>
         <div className="w-2 shrink-0" style={{ background: p.accent }} />
-        <div className="px-6 py-12">
+        <div className="px-5 py-10 sm:px-6 sm:py-12">
           {c.eyebrow && (
-            <p className="mb-4 text-[11px] tracking-[0.3em] uppercase" style={{ color: p.accent }}>
+            <p className="mb-4 text-[11px] tracking-[0.2em] sm:tracking-[0.3em] uppercase" style={{ color: p.accent }}>
               {c.eyebrow}
             </p>
           )}
-          <h1 className="text-4xl leading-tight font-semibold sm:text-5xl" style={{ fontFamily: t.fonts.display, color: p.fg }}>
+          <h1 className="text-[clamp(1.75rem,8.5vw,2.25rem)] leading-tight font-semibold break-words sm:text-5xl" style={{ fontFamily: t.fonts.display, color: p.fg }}>
             {c.title}
           </h1>
           {c.subtitle && (
@@ -238,7 +238,7 @@ function CoverSplit({ c, t }: { c: InvitationContent; t: Template }) {
       </div>
       {c.photos[0] && <Photo src={c.photos[0]} className="aspect-[16/9] w-full object-cover" />}
       {(date || time || c.venueName) && (
-        <div className="px-6 py-6 text-sm" style={{ color: p.fg }}>
+        <div className="px-5 py-5 text-sm sm:px-6 sm:py-6" style={{ color: p.fg }}>
           <p style={{ color: p.accent }} className="tracking-widest uppercase">
             {[date, time].filter(Boolean).join(" · ")}
           </p>
@@ -255,7 +255,7 @@ function CoverStory({ c, t, compact }: { c: InvitationContent; t: Template; comp
   const photo = c.photos[0] && isAllowedImageUrl(c.photos[0]) ? c.photos[0] : null;
   return (
     <section
-      className={`relative isolate flex flex-col justify-between overflow-hidden ${compact ? "h-[560px]" : "min-h-[100svh]"}`}
+      className={`relative isolate flex flex-col justify-between overflow-hidden ${compact ? "h-[520px] sm:h-[560px]" : "min-h-[100svh]"}`}
       style={{ background: p.bg }}
     >
       {photo ? (
@@ -267,19 +267,19 @@ function CoverStory({ c, t, compact }: { c: InvitationContent; t: Template; comp
         className="absolute inset-0 -z-10"
         style={{ background: `linear-gradient(to bottom, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0) 26%, ${p.bg}00 48%, ${p.bg} 96%)` }}
       />
-      <div className="px-8 pt-12 text-center">
+      <div className="px-5 pt-10 text-center sm:px-8 sm:pt-12">
         <span className="mx-auto mb-4 block size-1.5 rotate-45" style={{ background: photo ? "#ffffff" : p.accent }} aria-hidden />
         {c.eyebrow && (
-          <p className="text-[10px] tracking-[0.35em] uppercase" style={{ color: photo ? "#ffffffd9" : p.accent }}>
+          <p className="text-[10px] tracking-[0.22em] sm:tracking-[0.35em] uppercase" style={{ color: photo ? "#ffffffd9" : p.accent }}>
             {c.eyebrow}
           </p>
         )}
       </div>
-      <div className="px-8 pb-10 text-center">
-        <h1 className="text-6xl leading-none italic sm:text-7xl" style={{ fontFamily: t.fonts.display, color: p.fg, fontWeight: 500 }}>
+      <div className="px-5 pb-8 text-center sm:px-8 sm:pb-10">
+        <h1 className="text-[clamp(2.25rem,12vw,3.75rem)] leading-none break-words italic sm:text-7xl" style={{ fontFamily: t.fonts.display, color: p.fg, fontWeight: 500 }}>
           Invitation
         </h1>
-        <p className="mt-8 text-[10px] tracking-[0.3em] uppercase" style={{ color: p.muted }}>
+        <p className="mt-8 text-[10px] tracking-[0.2em] sm:tracking-[0.3em] uppercase" style={{ color: p.muted }}>
           Faire défiler
         </p>
         <span className="mx-auto mt-2 block h-6 w-px" style={{ background: p.accent }} aria-hidden />
@@ -319,15 +319,15 @@ function Body({ c, t, guestName }: { c: InvitationContent; t: Template; guestNam
   const target = c.date ? `${c.date}T${c.time || "00:00"}:00` : "";
 
   return (
-    <div className="space-y-10 px-6 py-10" style={{ background: p.bg }}>
+    <div className="space-y-8 px-5 py-8 sm:space-y-10 sm:px-6 sm:py-10" style={{ background: p.bg }}>
       <div className="text-center">
         {story && (
           <>
-            <p className="mb-6 text-[10px] tracking-[0.35em] uppercase" style={{ color: p.muted }}>
+            <p className="mb-6 text-[10px] tracking-[0.22em] sm:tracking-[0.35em] uppercase" style={{ color: p.muted }}>
               Bienvenue à notre célébration
             </p>
             {names.length === 2 ? (
-              <h2 className="text-5xl leading-[1.1]" style={{ fontFamily: t.fonts.display, color: p.fg, fontWeight: 500 }}>
+              <h2 className="text-[clamp(2rem,10vw,3rem)] leading-[1.1] break-words" style={{ fontFamily: t.fonts.display, color: p.fg, fontWeight: 500 }}>
                 {names[0]}
                 <span className="my-2 block text-3xl italic" style={{ color: p.accent }}>
                   &amp;
@@ -335,7 +335,7 @@ function Body({ c, t, guestName }: { c: InvitationContent; t: Template; guestNam
                 {names[1]}
               </h2>
             ) : (
-              <h2 className="text-4xl leading-tight" style={{ fontFamily: t.fonts.display, color: p.fg, fontWeight: 500 }}>
+              <h2 className="text-[clamp(1.75rem,8.5vw,2.25rem)] leading-tight break-words" style={{ fontFamily: t.fonts.display, color: p.fg, fontWeight: 500 }}>
                 {c.title}
               </h2>
             )}
@@ -358,7 +358,7 @@ function Body({ c, t, guestName }: { c: InvitationContent; t: Template; guestNam
       )}
 
       {(date || time || c.dressCode) && (
-        <div className="space-y-4 rounded-lg p-6 text-sm" style={{ background: p.surface, color: p.fg }}>
+        <div className="space-y-4 rounded-lg p-4 text-sm sm:p-6" style={{ background: p.surface, color: p.fg }}>
           {date && (
             <div className="flex items-start gap-3">
               <CalendarDays className="mt-0.5 size-4 shrink-0" style={{ color: p.accent }} />
@@ -427,11 +427,11 @@ function Location({ c, t }: { c: InvitationContent; t: Template }) {
   const mapQuery = [c.venueName, c.address].filter(Boolean).join(", ");
   const embed = c.showMap && mapQuery ? `https://maps.google.com/maps?q=${encodeURIComponent(mapQuery)}&z=15&output=embed` : "";
   return (
-    <section className="px-6 py-10 text-center" style={{ background: p.bg }}>
+    <section className="px-5 py-8 text-center sm:px-6 sm:py-10" style={{ background: p.bg }}>
       <h2 className="mb-5 text-2xl italic" style={{ fontFamily: t.fonts.display, color: p.fg }}>
         Localisation du lieu
       </h2>
-      <div className="rounded-2xl p-6" style={{ background: p.surface }}>
+      <div className="rounded-2xl p-4 sm:p-6" style={{ background: p.surface }}>
         <MapPin className="mx-auto mb-3 size-5" style={{ color: p.accent }} />
         {c.venueName && (
           <p className="font-medium" style={{ color: p.fg }}>
@@ -449,7 +449,7 @@ function Location({ c, t }: { c: InvitationContent; t: Template }) {
             href={mapOk ? c.mapUrl : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mapQuery)}`}
             target="_blank"
             rel="noopener noreferrer nofollow"
-            className="mt-5 inline-flex items-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium"
+            className="mt-5 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium"
             style={{ background: p.accent, color: p.bg }}
           >
             <Navigation className="size-4" /> Ouvrir l&apos;itinéraire
@@ -463,7 +463,7 @@ function Location({ c, t }: { c: InvitationContent; t: Template }) {
 function Closing({ t }: { t: Template }) {
   const p = t.palette;
   return (
-    <section className="px-8 pt-4 pb-12 text-center" style={{ background: p.bg }}>
+    <section className="px-5 pt-4 pb-10 text-center sm:px-8 sm:pb-12" style={{ background: p.bg }}>
       <span className="mx-auto mb-5 block size-1.5 rotate-45" style={{ background: p.accent }} aria-hidden />
       <p className="text-xl italic" style={{ fontFamily: t.fonts.display, color: p.fg }}>
         Nous avons hâte de vivre ce moment avec vous.
@@ -475,7 +475,7 @@ function Closing({ t }: { t: Template }) {
 export function InvitationView({ content, template, brand = true, guestName, embedded = false, children }: ViewProps) {
   const p = template.palette;
   return (
-    <div className="w-full overflow-hidden" style={{ background: p.bg, color: p.fg, fontFamily: template.fonts.body }}>
+    <div className="w-full min-w-0 overflow-hidden break-words" style={{ background: p.bg, color: p.fg, fontFamily: template.fonts.body }}>
       <Cover c={content} t={template} compact={embedded} />
       <Body c={content} t={template} guestName={guestName} />
       {children}

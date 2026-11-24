@@ -13,6 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { BASE_GUESTS, CATEGORIES, getCategory, minPriceForTier, priceUsdCents, TIERS, TIER_INFO } from "@/lib/catalog";
 import { sampleContent } from "@/lib/content";
+import { loadCatalog } from "@/lib/settings";
 import { formatUsdCents } from "@/lib/money";
 import { getTemplate, TEMPLATES, templatesForCategory } from "@/lib/templates";
 
@@ -38,7 +39,8 @@ const TRUST = [
   { title: "Réponses privées", text: "Vous seul voyez qui vient. Les réponses sont supprimées après l'événement." },
 ];
 
-export default function HomePage() {
+export default async function HomePage() {
+  await loadCatalog();
   const featured = TEMPLATES.slice(0, 6);
   const heroTemplate = getTemplate("recit-nuit") ?? TEMPLATES[0];
   const heroContent = sampleContent("mariage");

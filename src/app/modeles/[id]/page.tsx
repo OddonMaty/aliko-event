@@ -7,7 +7,8 @@ import { InvitationView } from "@/components/invitation/invitation-view";
 import { PurchasePanel } from "@/components/purchase-panel";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { getCategory } from "@/lib/catalog";
+import { getCategory, TIER_INFO } from "@/lib/catalog";
+import { loadCatalog } from "@/lib/settings";
 import { sampleContent } from "@/lib/content";
 import { getTemplate } from "@/lib/templates";
 
@@ -20,6 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function TemplatePage({ params, searchParams }: Props) {
+  const settings = await loadCatalog();
   const { id } = await params;
   const { categorie } = await searchParams;
   const template = getTemplate(id);
@@ -28,7 +30,7 @@ export default async function TemplatePage({ params, searchParams }: Props) {
   const categories = template.categories.map((c) => getCategory(c)!).filter(Boolean);
   const initial = categories.find((c) => c.id === categorie) ?? categories[0];
   // Aperçu avec un contenu d'exemple (date factice pour la démonstration).
-  const demo = { ...sampleContent(initial.id), date: "2027-06-12" };
+  const demo = { ...sampleContent(initial.id, settings.drinks.defaults), date: "2027-06-12" };
 
   return (
     <>
@@ -52,6 +54,8 @@ export default async function TemplatePage({ params, searchParams }: Props) {
             <PurchasePanel
               templateId={template.id}
               initialCategory={initial.id}
+              guestLimits={settings.guestLimits}
+              tiers={TIER_INFO}
               categories={categories.map((c) => ({ id: c.id, label: c.label, prices: c.prices, extraGuestCents: c.extraGuestCents }))}
             />
           </div>

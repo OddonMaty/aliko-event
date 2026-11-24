@@ -68,7 +68,7 @@ export function Guestbook({
   }
 
   return (
-    <section className="px-6 py-10" style={{ background: p.bg }}>
+    <section className="px-5 py-8 sm:px-6 sm:py-10" style={{ background: p.bg }}>
       <h2 className="mb-5 text-center text-2xl italic" style={{ fontFamily: template.fonts.display, color: p.fg }}>
         Mots doux
       </h2>
@@ -99,7 +99,7 @@ export function Guestbook({
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-base font-semibold disabled:opacity-60"
+          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold disabled:opacity-60"
           style={{ background: p.accent, color: p.bg }}
         >
           {loading ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}

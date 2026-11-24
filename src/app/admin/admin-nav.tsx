@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Receipt, ScrollText, Settings2, ShieldAlert, Ticket, Users } from "lucide-react";
+import { LayoutDashboard, Receipt, ScrollText, Settings2, ShieldAlert, SlidersHorizontal, Ticket, Users } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -11,6 +11,7 @@ const ITEMS = [
   { href: "/admin/commandes", label: "Commandes", icon: Receipt },
   { href: "/admin/utilisateurs", label: "Utilisateurs", icon: Users },
   { href: "/admin/invitations", label: "Invitations", icon: Ticket },
+  { href: "/admin/reglages", label: "Réglages", icon: SlidersHorizontal },
   { href: "/admin/moderation", label: "Modération", icon: ShieldAlert },
   { href: "/admin/journal", label: "Journal", icon: ScrollText },
   { href: "/admin/systeme", label: "Système", icon: Settings2 },

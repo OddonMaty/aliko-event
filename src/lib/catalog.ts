@@ -4,13 +4,14 @@
 // TOUS les prix se modifient ICI, à un seul endroit.
 
 /** Paliers de nombre d'invités proposés à l'achat. */
-export const GUEST_LIMITS = [50, 100, 200, 300, 500, 1000] as const;
-export type GuestLimit = (typeof GUEST_LIMITS)[number];
+// Modifiable depuis l'administration (voir lib/settings.ts) : la liste est remplacée sur place.
+export const GUEST_LIMITS: number[] = [50, 100, 200, 300, 500, 1000];
+export type GuestLimit = number;
 /** Nombre d'invités inclus dans le prix de base. */
 export const BASE_GUESTS = 50;
 
 export function isGuestLimit(v: unknown): v is GuestLimit {
-  return typeof v === "number" && (GUEST_LIMITS as readonly number[]).includes(v);
+  return typeof v === "number" && GUEST_LIMITS.includes(v);
 }
 
 export const TIERS = ["essentiel", "standard", "premium"] as const;

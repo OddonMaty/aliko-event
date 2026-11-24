@@ -3,7 +3,8 @@ import { z } from "zod";
 
 import { requireApiUser } from "@/lib/auth";
 import { CATEGORY_IDS, getCategory, isGuestLimit, priceUsdCents, TIERS, TIER_INFO } from "@/lib/catalog";
-import { sampleContent } from "@/lib/content";
+import { applySections, sampleContent } from "@/lib/content";
+import { loadCatalog } from "@/lib/settings";
 import { getSql, q } from "@/lib/db";
 import { FlexpayError, normalizeDrcPhone, requestCardPayment, requestMobilePayment } from "@/lib/flexpay";
 import { handle, json, readJson } from "@/lib/http";
@@ -28,6 +29,7 @@ export const POST = handle(async (req) => {
   const user = await requireApiUser();
   await rateLimit(`checkout:${user.id}`, 8, 3600);
 
+  const settings = await loadCatalog();
   const body = schema.parse(await readJson(req));
   if (body.method === "test" && !isTestPayments()) throw new HttpError(403, "Le mode test est désactivé");
   const template = getTemplate(body.templateId);
@@ -48,7 +50,7 @@ export const POST = handle(async (req) => {
   const invitationId = randomUUID();
   const reference = `AE-${Date.now().toString(36)}-${randomBytes(4).toString("hex")}`.toUpperCase();
   const slug = randomSlug();
-  const content = JSON.stringify(sampleContent(body.category));
+  const content = JSON.stringify(applySections(sampleContent(body.category, settings.drinks.defaults), settings.sections, settings.drinks.max));
 
   const sql = getSql();
   await sql.transaction([

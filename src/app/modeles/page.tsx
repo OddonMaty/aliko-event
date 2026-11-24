@@ -5,6 +5,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { TemplateCard } from "@/components/template-card";
 import { Button } from "@/components/ui/button";
+import { loadCatalog } from "@/lib/settings";
 import { CATEGORIES, getCategory, type CategoryId } from "@/lib/catalog";
 import { TEMPLATES, templatesForCategory } from "@/lib/templates";
 
@@ -14,6 +15,7 @@ export const metadata: Metadata = {
 };
 
 export default async function GalleryPage({ searchParams }: { searchParams: Promise<{ categorie?: string }> }) {
+  await loadCatalog();
   const { categorie } = await searchParams;
   const category = categorie ? getCategory(categorie) : undefined;
   const list = category ? templatesForCategory(category.id) : TEMPLATES;

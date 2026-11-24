@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { NativeSelect } from "@/components/ui/native-select";
-import { BASE_GUESTS, GUEST_LIMITS, guestExtraCents, TIERS, TIER_INFO, type Category, type GuestLimit, type Tier } from "@/lib/catalog";
+import { BASE_GUESTS, guestExtraCents, TIERS, type Category, type GuestLimit, type Tier, type TierInfo } from "@/lib/catalog";
 import { formatUsdCents } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
@@ -17,10 +17,14 @@ export function PurchasePanel({
   templateId,
   categories,
   initialCategory,
+  guestLimits,
+  tiers,
 }: {
   templateId: string;
   categories: Pick<Category, "id" | "label" | "prices" | "extraGuestCents">[];
   initialCategory: string;
+  guestLimits: number[];
+  tiers: Record<Tier, TierInfo>;
 }) {
   const [category, setCategory] = useState(initialCategory);
   const [tier, setTier] = useState<Tier>("standard");
@@ -66,7 +70,7 @@ export function PurchasePanel({
         <div className="space-y-2">
           <Label htmlFor="guests">Nombre d&apos;invités</Label>
           <NativeSelect id="guests" value={guests} onChange={(e) => setGuests(Number(e.target.value) as GuestLimit)}>
-            {GUEST_LIMITS.map((n) => (
+            {guestLimits.map((n) => (
               <option key={n} value={n}>
                 Jusqu&apos;à {n} invités
               </option>
@@ -81,7 +85,7 @@ export function PurchasePanel({
 
         <div className="space-y-2" role="radiogroup" aria-label="Formule">
           {TIERS.map((t) => {
-            const info = TIER_INFO[t];
+            const info = tiers[t];
             const active = t === tier;
             return (
               <button

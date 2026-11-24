@@ -1,3 +1,4 @@
+import { loadCatalog } from "@/lib/settings";
 import { sampleUrl } from "@/lib/samples";
 import type { Metadata } from "next";
 import { cache } from "react";
@@ -9,7 +10,7 @@ import { InviteShortcut } from "@/components/invitation/shortcut";
 import { ReportButton } from "@/components/report-button";
 import { RsvpForm } from "@/components/rsvp-form";
 import { TIER_INFO, type Tier } from "@/lib/catalog";
-import { isAllowedImageUrl } from "@/lib/content";
+import { applySections, isAllowedImageUrl } from "@/lib/content";
 import { q } from "@/lib/db";
 import { findGuest } from "@/lib/guests";
 import { parseStoredContent } from "@/lib/invitations";
@@ -70,7 +71,8 @@ export default async function InvitationPage({ params, searchParams }: Props) {
 
   const template = getTemplate(inv.template_id);
   if (!template) return <Notice title="Invitation indisponible" text="Cette invitation n'est plus disponible." />;
-  const content = parseStoredContent(inv.content);
+  const settings = await loadCatalog();
+  const content = applySections(parseStoredContent(inv.content), settings.sections, settings.drinks.max);
 
   // Invité identifié par son lien personnel (?g=...) : accueil nominatif, réponse liée, pass QR.
   const guestRow = await findGuest(inv.id, g).catch(() => null);
@@ -99,7 +101,7 @@ export default async function InvitationPage({ params, searchParams }: Props) {
         <InvitationView content={content} template={template} brand={!TIER_INFO[inv.tier].brandingFree} guestName={guest?.name}>
           {content.rsvpEnabled && (
             <div id="rsvp" className="scroll-mt-4">
-              <RsvpForm slug={inv.slug} template={template} deadline={content.rsvpDeadline || undefined} guest={guest} answered={answered} drinks={content.drinksEnabled ? content.drinks : []} />
+              <RsvpForm slug={inv.slug} template={template} deadline={content.rsvpDeadline || undefined} guest={guest} answered={answered} drinks={content.drinksEnabled ? content.drinks : []} maxParty={settings.rsvp.maxPartySize} />
             </div>
           )}
           {content.guestbookEnabled && <Guestbook slug={inv.slug} template={template} guest={guest} initial={notes} />}

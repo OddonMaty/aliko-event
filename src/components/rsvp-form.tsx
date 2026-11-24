@@ -18,9 +18,10 @@ interface Props {
   answered?: Att | null;
   /** Boissons proposées par l'organisateur (vide = pas de choix). */
   drinks?: string[];
+  maxParty?: number;
 }
 
-export function RsvpForm({ slug, template, deadline, guest, answered = null, drinks = [] }: Props) {
+export function RsvpForm({ slug, template, deadline, guest, answered = null, drinks = [], maxParty = 10 }: Props) {
   const p = template.palette;
   const [attendance, setAttendance] = useState<Att>(answered ?? "yes");
   const [loading, setLoading] = useState(false);
@@ -75,7 +76,7 @@ export function RsvpForm({ slug, template, deadline, guest, answered = null, dri
           ? "Réponse enregistrée. Vous nous manquerez."
           : "Réponse enregistrée. Confirmez-nous dès que possible.";
     return (
-      <section className="px-6 py-10 text-center" style={{ background: p.bg }}>
+      <section className="px-5 py-8 text-center sm:px-6 sm:py-10" style={{ background: p.bg }}>
         <h2 className="mb-5 text-2xl italic" style={{ fontFamily: template.fonts.display, color: p.fg }}>
           Votre présence
         </h2>
@@ -112,11 +113,11 @@ export function RsvpForm({ slug, template, deadline, guest, answered = null, dri
   );
 
   return (
-    <section className="px-6 py-10" style={{ background: p.bg }}>
+    <section className="px-5 py-8 sm:px-6 sm:py-10" style={{ background: p.bg }}>
       <h2 className="mb-5 text-center text-2xl italic" style={{ fontFamily: template.fonts.display, color: p.fg }}>
         Votre présence
       </h2>
-      <form onSubmit={submit} className="space-y-4 rounded-2xl p-6" style={{ background: p.surface, color: p.fg }}>
+      <form onSubmit={submit} className="space-y-4 rounded-2xl p-4 sm:p-6" style={{ background: p.surface, color: p.fg }}>
         {deadline && (
           <p className="text-center text-xs" style={{ color: p.muted }}>
             Merci de répondre avant le {deadline.split("-").reverse().join("/")}
@@ -141,7 +142,7 @@ export function RsvpForm({ slug, template, deadline, guest, answered = null, dri
           <label className="flex items-center justify-between gap-3 text-sm">
             <span>Nombre de personnes</span>
             <select name="partySize" defaultValue="1" className="min-h-11 rounded-lg px-3 py-2 text-base" style={{ ...field, background: p.surface }}>
-              {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+              {Array.from({ length: maxParty }, (_, i) => i + 1).map((n) => (
                 <option key={n} value={n}>
                   {n}
                 </option>
@@ -152,7 +153,7 @@ export function RsvpForm({ slug, template, deadline, guest, answered = null, dri
         {attendance !== "no" && drinks.length > 0 && (
           <label className="flex items-center justify-between gap-3 text-sm">
             <span>Boisson souhaitée</span>
-            <select name="drink" defaultValue="" className="min-h-11 max-w-[60%] rounded-lg px-3 py-2 text-base" style={{ ...field, background: p.surface }}>
+            <select name="drink" defaultValue="" className="min-h-11 min-w-0 max-w-[60%] rounded-lg px-3 py-2 text-base" style={{ ...field, background: p.surface }}>
               <option value="">Pas de préférence</option>
               {drinks.map((d) => (
                 <option key={d} value={d}>
@@ -172,7 +173,7 @@ export function RsvpForm({ slug, template, deadline, guest, answered = null, dri
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-base font-semibold disabled:opacity-60"
+          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold disabled:opacity-60"
           style={{ background: p.accent, color: p.bg }}
         >
           {loading && <Loader2 className="size-4 animate-spin" />}

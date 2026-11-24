@@ -7,6 +7,7 @@ import { SiteHeader } from "@/components/site-header";
 import { requireUser } from "@/lib/auth";
 import { getCategory, isGuestLimit, isTier, priceUsdCents, TIER_INFO } from "@/lib/catalog";
 import { toMinorAmount } from "@/lib/money";
+import { loadCatalog } from "@/lib/settings";
 import { getTemplate } from "@/lib/templates";
 import { isTestPayments } from "@/lib/testmode";
 
@@ -15,6 +16,7 @@ export const metadata: Metadata = { title: "Paiement", robots: { index: false } 
 type Props = { searchParams: Promise<{ modele?: string; categorie?: string; palier?: string; invites?: string }> };
 
 export default async function CheckoutPage({ searchParams }: Props) {
+  await loadCatalog();
   const sp = await searchParams;
   const template = sp.modele ? getTemplate(sp.modele) : undefined;
   const category = sp.categorie ? getCategory(sp.categorie) : undefined;

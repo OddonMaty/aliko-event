@@ -6,6 +6,7 @@ import { CATEGORIES, TIERS } from "@/lib/catalog";
 import { q } from "@/lib/db";
 import { formatUsdCents, usdCdfRate } from "@/lib/money";
 import { isTestPayments } from "@/lib/testmode";
+import { loadCatalog } from "@/lib/settings";
 import { purgeStaleDrafts } from "../actions";
 import { ConfirmButton } from "../confirm-button";
 import { PageTitle, Panel } from "../ui";
@@ -13,6 +14,7 @@ import { PageTitle, Panel } from "../ui";
 const has = (...names: string[]) => names.every((n) => !!process.env[n]);
 
 export default async function SystemPage() {
+  await loadCatalog();
   const [db, lastPurge, stale, errors] = await Promise.all([
     q<{ size: string; users: number; invitations: number; rsvps: number }>`
       SELECT pg_size_pretty(pg_database_size(current_database())) AS size,
@@ -98,7 +100,7 @@ export default async function SystemPage() {
               </tbody>
             </table>
           </div>
-          <Button asChild variant="link" size="sm" className="mt-2 h-auto p-0"><a href="/modeles">Voir la boutique</a></Button>
+          <Button asChild variant="link" size="sm" className="mt-2 h-auto p-0"><a href="/admin/reglages">Modifier les tarifs</a></Button>
         </Panel>
       </div>
     </>

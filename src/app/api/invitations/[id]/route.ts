@@ -3,7 +3,8 @@ import { z } from "zod";
 
 import { requireApiUser } from "@/lib/auth";
 import { TIER_INFO } from "@/lib/catalog";
-import { contentSchema, customSlugSchema, enforceTierLimits } from "@/lib/content";
+import { loadCatalog } from "@/lib/settings";
+import { applySections, contentSchema, customSlugSchema, enforceTierLimits } from "@/lib/content";
 import { q } from "@/lib/db";
 import { handle, json, readJson } from "@/lib/http";
 import { expiryFromEventDate, getOwnedInvitation, todayKinshasa } from "@/lib/invitations";
@@ -23,7 +24,8 @@ export const PUT = handle(async (req, ctx) => {
   }
 
   const parsed = body.parse(await readJson(req));
-  const content = contentSchema.parse(parsed.content);
+  const settings = await loadCatalog();
+  const content = applySections(contentSchema.parse(parsed.content), settings.sections, settings.drinks.max);
   try {
     enforceTierLimits(content, inv.tier);
   } catch (e) {

@@ -7,6 +7,9 @@ import { Editor, type MessageItem, type RsvpItem } from "@/components/editor";
 import type { GuestItem } from "@/components/guest-manager";
 import { SiteHeader } from "@/components/site-header";
 import { requireUser } from "@/lib/auth";
+import { TIER_INFO } from "@/lib/catalog";
+import { applySections } from "@/lib/content";
+import { loadCatalog } from "@/lib/settings";
 import { q } from "@/lib/db";
 import { getOwnedInvitation, lastOnlineDay, parseStoredContent } from "@/lib/invitations";
 import { getTemplate } from "@/lib/templates";
@@ -15,6 +18,7 @@ import { appUrl, formatDateFr } from "@/lib/utils";
 export const metadata: Metadata = { title: "Personnaliser", robots: { index: false } };
 
 export default async function EditorPage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ tab?: string }> }) {
+  const settings = await loadCatalog();
   const { id } = await params;
   const user = await requireUser(`/tableau-de-bord/${id}`);
 
@@ -46,7 +50,7 @@ export default async function EditorPage({ params, searchParams }: { params: Pro
     WHERE invitation_id = ${inv.id} AND hidden = false ORDER BY created_at DESC LIMIT 200`;
   const messages: MessageItem[] = messageRows.map((m) => ({ ...m, created_at: new Date(m.created_at).toISOString() }));
 
-  const content = parseStoredContent(inv.content);
+  const content = applySections(parseStoredContent(inv.content), settings.sections, settings.drinks.max);
   const lastDay = content.date ? lastOnlineDay(content.date) : null;
 
   return (
@@ -74,6 +78,10 @@ export default async function EditorPage({ params, searchParams }: { params: Pro
           guests={guests}
           messages={messages}
           baseUrl={appUrl()}
+          tierInfo={TIER_INFO[inv.tier]}
+          drinkPresets={settings.drinks.presets}
+          drinkMax={settings.drinks.max}
+          sections={settings.sections}
         />
       </main>
     </>

@@ -17,9 +17,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { TIER_INFO, type Tier } from "@/lib/catalog";
+import { type Tier, type TierInfo } from "@/lib/catalog";
 import type { InvitationContent } from "@/lib/content";
-import { DRINK_PRESETS, MAX_DRINKS } from "@/lib/drinks";
 import type { Template } from "@/lib/templates";
 import { cn, formatDateFr } from "@/lib/utils";
 
@@ -51,6 +50,10 @@ interface Props {
   guests: GuestItem[];
   messages: MessageItem[];
   baseUrl: string;
+  tierInfo: TierInfo;
+  drinkPresets: string[];
+  drinkMax: number;
+  sections: { guestbook: boolean; map: boolean; drinks: boolean };
 }
 
 const ATT: Record<RsvpItem["attendance"], { label: string; variant: "success" | "destructive" | "secondary" }> = {
@@ -69,11 +72,12 @@ function Field({ id, label, hint, children }: { id: string; label: string; hint?
   );
 }
 
-export function Editor({ initialTab, invitation, template, initialContent, rsvps, guests, messages, baseUrl }: Props) {
+export function Editor({ initialTab, invitation, template, initialContent, rsvps, guests, messages, baseUrl, tierInfo, drinkPresets, drinkMax, sections }: Props) {
   const router = useRouter();
   const [hiding, setHiding] = useState<string | null>(null);
   const [customDrink, setCustomDrink] = useState("");
-  const info = TIER_INFO[invitation.tier];
+  const info = tierInfo;
+  const MAX_DRINKS = drinkMax;
   const [content, setContent] = useState<InvitationContent>(initialContent);
   const [slug, setSlug] = useState(invitation.slug);
   const [savedSlug, setSavedSlug] = useState(invitation.slug);
@@ -162,7 +166,7 @@ export function Editor({ initialTab, invitation, template, initialContent, rsvps
       .filter((r) => r.attendance !== "no" && r.drink)
       .reduce<Record<string, number>>((acc, r) => ({ ...acc, [r.drink as string]: (acc[r.drink as string] ?? 0) + r.party_size }), {}),
   ).sort((a, b) => b[1] - a[1]);
-  const allDrinks = [...DRINK_PRESETS, ...content.drinks.filter((d) => !(DRINK_PRESETS as readonly string[]).includes(d))];
+  const allDrinks = [...drinkPresets, ...content.drinks.filter((d) => !drinkPresets.includes(d))];
   const toggleDrink = (d: string) =>
     set("drinks", content.drinks.includes(d) ? content.drinks.filter((x) => x !== d) : [...content.drinks, d].slice(0, MAX_DRINKS));
   const addCustomDrink = () => {
@@ -259,6 +263,7 @@ export function Editor({ initialTab, invitation, template, initialContent, rsvps
                   <Field id="map" label="Lien de la carte (optionnel)" hint="Google Maps, OpenStreetMap ou Waze uniquement.">
                     <Input id="map" type="url" value={content.mapUrl} maxLength={400} placeholder="https://maps.app.goo.gl/…" onChange={(e) => set("mapUrl", e.target.value)} />
                   </Field>
+                  {sections.map && (
                   <label className="flex items-center gap-3 text-sm">
                     <input
                       type="checkbox"
@@ -268,6 +273,7 @@ export function Editor({ initialTab, invitation, template, initialContent, rsvps
                     />
                     Afficher la carte du lieu dans l&apos;invitation (d&apos;après le nom et l&apos;adresse)
                   </label>
+                  )}
                   <Field id="message" label="Message">
                     <Textarea id="message" rows={4} value={content.message} maxLength={600} onChange={(e) => set("message", e.target.value)} />
                   </Field>
@@ -338,6 +344,7 @@ export function Editor({ initialTab, invitation, template, initialContent, rsvps
                     />
                     Permettre à mes invités de confirmer leur présence
                   </label>
+                  {sections.guestbook && (
                   <label className="flex items-center gap-3 text-sm">
                     <input
                       type="checkbox"
@@ -347,6 +354,7 @@ export function Editor({ initialTab, invitation, template, initialContent, rsvps
                     />
                     Afficher les « mots doux » (messages publics de mes invités)
                   </label>
+                  )}
                   {content.rsvpEnabled && (
                     <Field id="deadline" label="Date limite de réponse (optionnel)">
                       <Input id="deadline" type="date" value={content.rsvpDeadline} onChange={(e) => set("rsvpDeadline", e.target.value)} />
@@ -355,6 +363,7 @@ export function Editor({ initialTab, invitation, template, initialContent, rsvps
                 </CardContent>
               </Card>
 
+              {sections.drinks && (
               <Card>
                 <CardHeader>
                   <CardTitle>Boissons</CardTitle>
@@ -419,6 +428,7 @@ export function Editor({ initialTab, invitation, template, initialContent, rsvps
                   )}
                 </CardContent>
               </Card>
+              )}
             </fieldset>
           </TabsContent>
 
