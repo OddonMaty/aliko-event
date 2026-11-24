@@ -50,6 +50,8 @@ export async function GET(req: Request) {
 
   // Compteurs anti-abus périmés.
   await q`DELETE FROM rate_limits WHERE window_start < now() - interval '2 days'`.catch(() => undefined);
+  await q`DELETE FROM login_codes WHERE expires_at < now()`.catch(() => undefined);
+  await q`DELETE FROM password_resets WHERE expires_at < now()`.catch(() => undefined);
 
   await audit("cron", "cron.purge", undefined, undefined, { purged: done.length, failed: failed.length });
   return Response.json({ purged: done.length, failed: failed.length, remaining: expired.length === BATCH });

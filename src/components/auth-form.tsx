@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
+import { CodeLogin } from "@/components/code-login";
 import { Turnstile } from "@/components/turnstile";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +15,7 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [token, setToken] = useState("");
+  const [useCode, setUseCode] = useState(false);
   const isRegister = mode === "register";
   const nextQuery = next ? `?next=${encodeURIComponent(next)}` : "";
 
@@ -53,6 +55,9 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
         </CardDescription>
       </CardHeader>
       <CardContent>
+        {!isRegister && useCode ? (
+          <CodeLogin next={next} onBack={() => setUseCode(false)} />
+        ) : (
         <form onSubmit={onSubmit} className="space-y-4">
           {isRegister && (
             <div className="space-y-2">
@@ -109,6 +114,11 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
             {loading && <Loader2 className="animate-spin" />}
             {isRegister ? "Créer mon compte" : "Se connecter"}
           </Button>
+          {!isRegister && (
+            <Button type="button" variant="outline" className="w-full" onClick={() => setUseCode(true)}>
+              Recevoir un code par e-mail
+            </Button>
+          )}
           <p className="text-muted-foreground text-center text-sm">
             {isRegister ? (
               <>
@@ -127,6 +137,7 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
             )}
           </p>
         </form>
+        )}
       </CardContent>
     </Card>
   );

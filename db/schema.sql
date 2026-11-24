@@ -162,3 +162,12 @@ CREATE TABLE push_subscriptions (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE INDEX push_subscriptions_user_idx ON push_subscriptions (user_id);
+
+-- Codes de connexion à usage unique envoyés par e-mail (un seul code actif par adresse)
+CREATE TABLE login_codes (
+  email text PRIMARY KEY,
+  code_hash text NOT NULL,
+  attempts int NOT NULL DEFAULT 0,
+  expires_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
