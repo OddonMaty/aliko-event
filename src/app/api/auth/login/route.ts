@@ -25,11 +25,13 @@ export const POST = handle(async (req) => {
   await rateLimit(`login-email:${body.email}`, 8, 900);
   await verifyTurnstile(body.turnstile, ip);
 
-  const rows = await q<{ id: string; password_hash: string }>`
-    SELECT id, password_hash FROM users WHERE lower(email) = ${body.email}`;
+  const rows = await q<{ id: string; password_hash: string; disabled_at: string | null }>`
+    SELECT id, password_hash, disabled_at FROM users WHERE lower(email) = ${body.email}`;
   const user = rows[0];
   const ok = await bcrypt.compare(body.password, user?.password_hash ?? DUMMY_HASH);
   if (!user || !ok) throw new HttpError(401, "Email ou mot de passe incorrect");
+
+  if (user.disabled_at) throw new HttpError(403, "Ce compte est suspendu. Contactez le support.");
 
   await createSession(user.id);
   return json({ ok: true, next: safeNext(body.next) });

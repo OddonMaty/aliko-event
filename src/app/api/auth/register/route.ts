@@ -4,6 +4,8 @@ import { z } from "zod";
 import { createSession, safeNext } from "@/lib/auth";
 import { q } from "@/lib/db";
 import { handle, json, readJson } from "@/lib/http";
+import { button, layout, sendEmail } from "@/lib/email";
+import { appUrl } from "@/lib/utils";
 import { assertSameOrigin, clientIp, HttpError, rateLimit, verifyTurnstile, audit } from "@/lib/security";
 
 const schema = z.object({
@@ -33,5 +35,6 @@ export const POST = handle(async (req) => {
 
   await createSession(rows[0].id);
   await audit(rows[0].id, "user.registered", "user", rows[0].id);
+  await sendEmail(body.email, "Bienvenue sur Aliko Event", layout(`Bienvenue, ${body.name}`, `<p>Votre compte est prêt. Choisissez un modèle, personnalisez-le et envoyez le lien à vos invités.</p>${button(`${appUrl()}/modeles`, "Voir les modèles")}`));
   return json({ ok: true, next: safeNext(body.next) });
 });

@@ -1,7 +1,9 @@
 import { getSql, q } from "./db";
 import { audit } from "./security";
+import { button, layout, sendEmail } from "./email";
+import { appUrl } from "./utils";
 import { checkTransaction } from "./flexpay";
-import { flexpayAmount, type Currency } from "./money";
+import { flexpayAmount, formatMoney, type Currency } from "./money";
 
 // Règle d'or : seule CETTE fonction (côté serveur) peut passer une commande à « payée »,
 // et uniquement après avoir interrogé FlexPay directement (le callback seul ne suffit jamais).
@@ -28,6 +30,29 @@ export async function markOrderPaid(orderId: string, providerRef?: string) {
           AND EXISTS (SELECT 1 FROM orders o WHERE o.id = ${orderId} AND o.status = 'paid')`,
   ]);
   await audit("system", "order.paid", "order", orderId);
+  await sendReceipt(orderId);
+}
+
+/** Reçu par e-mail, une seule fois : le marqueur est posé avant l'envoi (un échec d'envoi ne bloque jamais le paiement). */
+async function sendReceipt(orderId: string) {
+  try {
+    const claimed = await q<{ id: string }>`
+      INSERT INTO audit_log (actor, action, entity, entity_id) SELECT 'system', 'order.receipt_sent', 'order', ${orderId}
+      WHERE NOT EXISTS (SELECT 1 FROM audit_log WHERE action = 'order.receipt_sent' AND entity_id = ${orderId}) RETURNING id::text AS id`;
+    if (!claimed[0]) return;
+    const r = await q<{ email: string; name: string; amount: number; currency: Currency; reference: string; invitation_id: string | null }>`
+      SELECT u.email, u.name, o.amount, o.currency, o.reference, (SELECT i.id FROM invitations i WHERE i.order_id = o.id) AS invitation_id
+      FROM orders o JOIN users u ON u.id = o.user_id WHERE o.id = ${orderId} AND o.status = 'paid'`;
+    const o = r[0];
+    if (!o) return;
+    await sendEmail(
+      o.email,
+      "Votre paiement est confirmé",
+      layout("Paiement confirmé", `<p>Merci ${o.name.replace(/[<>&"']/g, "")}. Nous avons bien reçu <strong>${formatMoney(o.amount, o.currency)}</strong> (réf. ${o.reference}).</p><p>Votre invitation est prête à personnaliser.</p>${button(o.invitation_id ? `${appUrl()}/tableau-de-bord/${o.invitation_id}` : `${appUrl()}/tableau-de-bord`, "Personnaliser mon invitation")}`),
+    );
+  } catch (e) {
+    console.error("[receipt]", e);
+  }
 }
 
 export async function markOrderFailed(orderId: string) {

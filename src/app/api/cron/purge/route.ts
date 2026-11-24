@@ -1,7 +1,7 @@
-import { del, list } from "@vercel/blob";
 import { timingSafeEqual } from "node:crypto";
 
 import { q } from "@/lib/db";
+import { deletePhotos } from "@/lib/purge";
 import { audit } from "@/lib/security";
 
 export const dynamic = "force-dynamic";
@@ -17,17 +17,6 @@ function authorized(req: Request): boolean {
   const a = Buffer.from(got);
   const b = Buffer.from(want);
   return a.length === b.length && timingSafeEqual(a, b);
-}
-
-/** Supprime les photos stockées pour une invitation (dossier inv/<id>/). */
-async function deletePhotos(invitationId: string): Promise<void> {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) return;
-  let cursor: string | undefined;
-  do {
-    const page = await list({ prefix: `inv/${invitationId}/`, cursor, limit: 100 });
-    if (page.blobs.length) await del(page.blobs.map((b) => b.url));
-    cursor = page.hasMore ? page.cursor : undefined;
-  } while (cursor);
 }
 
 /**
@@ -62,5 +51,6 @@ export async function GET(req: Request) {
   // Compteurs anti-abus périmés.
   await q`DELETE FROM rate_limits WHERE window_start < now() - interval '2 days'`.catch(() => undefined);
 
+  await audit("cron", "cron.purge", undefined, undefined, { purged: done.length, failed: failed.length });
   return Response.json({ purged: done.length, failed: failed.length, remaining: expired.length === BATCH });
 }

@@ -1,5 +1,5 @@
 import { ZodError } from "zod";
-import { HttpError } from "./security";
+import { audit, HttpError } from "./security";
 
 export function json(data: unknown, status = 200, headers?: HeadersInit) {
   return Response.json(data, { status, headers });
@@ -22,6 +22,9 @@ export function handle(fn: Handler): Handler {
         return json({ error: e.issues[0]?.message ?? "Données invalides" }, 400);
       }
       console.error("[api]", e);
+      let path = "";
+      try { path = new URL(req.url).pathname; } catch { /* ignoré */ }
+      await audit(null, "error.api", "route", path, { message: (e instanceof Error ? e.message : String(e)).slice(0, 300), method: req.method });
       return json({ error: "Une erreur est survenue. Réessayez." }, 500);
     }
   };

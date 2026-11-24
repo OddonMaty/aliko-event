@@ -49,7 +49,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
   try {
     const { payload } = await jwtVerify(token, secretKey(), { algorithms: ["HS256"] });
     if (!payload.sub) return null;
-    const rows = await q<SessionUser>`SELECT id, email, name, role FROM users WHERE id = ${payload.sub}`;
+    const rows = await q<SessionUser>`SELECT id, email, name, role FROM users WHERE id = ${payload.sub} AND disabled_at IS NULL`;
     return rows[0] ?? null;
   } catch {
     return null;

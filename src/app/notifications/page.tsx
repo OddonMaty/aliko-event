@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BellOff, MessageSquareHeart, Phone, Mail, Users, Wine, MessageCircle } from "lucide-react";
 
+import { PushToggle } from "@/components/push-toggle";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +43,7 @@ export default async function NotificationsPage() {
       <main className="mx-auto w-full max-w-2xl px-4 py-8 md:py-12">
         <h1 className="font-serif text-3xl">Notifications</h1>
         <p className="text-muted-foreground mt-1 text-sm">Les réponses de vos invités, avec tout ce qu&apos;ils ont rempli.</p>
+        <div className="mt-4"><PushToggle /></div>
 
         {rows.length === 0 ? (
           <div className="text-muted-foreground mt-10 flex flex-col items-center gap-3 rounded-xl border border-dashed p-10 text-center text-sm">

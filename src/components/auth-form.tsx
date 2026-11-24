@@ -80,7 +80,11 @@ export function AuthForm({ mode, next }: { mode: "login" | "register"; next?: st
               required
               minLength={isRegister ? 8 : 1}
             />
-            {isRegister && <p className="text-muted-foreground text-xs">8 caractères minimum.</p>}
+            {isRegister ? (
+              <p className="text-muted-foreground text-xs">8 caractères minimum.</p>
+            ) : (
+              <Link href="/mot-de-passe-oublie" className="text-primary inline-block py-1 text-xs underline-offset-4 hover:underline">Mot de passe oublié ?</Link>
+            )}
           </div>
           <Turnstile onToken={setToken} />
           {error && (
