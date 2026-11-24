@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 
+import { ConfirmButton } from "@/components/confirm-button";
 import { LogoutButton } from "@/components/logout-button";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -14,6 +15,7 @@ import { q } from "@/lib/db";
 import { lastOnlineDay, parseStoredContent } from "@/lib/invitations";
 import { getTemplate } from "@/lib/templates";
 import { formatDateFr } from "@/lib/utils";
+import { deleteMyInvitation } from "./actions";
 
 export const metadata: Metadata = { title: "Mes invitations", robots: { index: false } };
 
@@ -100,9 +102,26 @@ export default async function DashboardPage() {
                         </p>
                       )}
                     </div>
-                    <Button asChild variant={r.status === "awaiting_payment" ? "outline" : "default"} size="sm" className="w-full sm:w-auto">
-                      <Link href={href}>{r.status === "awaiting_payment" ? "Voir le paiement" : "Gérer"}</Link>
-                    </Button>
+                    <div className="flex w-full gap-2 sm:w-auto">
+                      <Button asChild variant={r.status === "awaiting_payment" ? "outline" : "default"} size="sm" className="flex-1 sm:flex-none">
+                        <Link href={href}>{r.status === "awaiting_payment" ? "Voir le paiement" : "Gérer"}</Link>
+                      </Button>
+                      <form action={deleteMyInvitation}>
+                        <input type="hidden" name="invitationId" value={r.id} />
+                        <ConfirmButton
+                          variant="outline"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          message={
+                            r.status === "awaiting_payment"
+                              ? "Annuler cette commande et supprimer l'invitation ?"
+                              : "Supprimer définitivement cette invitation, ses réponses, invités et photos ? Le lien partagé ne fonctionnera plus. Cette action est irréversible et n'ouvre pas droit à un remboursement."
+                          }
+                        >
+                          {r.status === "awaiting_payment" ? "Annuler" : "Supprimer"}
+                        </ConfirmButton>
+                      </form>
+                    </div>
                   </CardContent>
                 </Card>
               );
