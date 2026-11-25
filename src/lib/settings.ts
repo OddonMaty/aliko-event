@@ -1,5 +1,7 @@
 import { q } from "@/lib/db";
 import { CATEGORIES, GUEST_LIMITS, TIERS, TIER_INFO, type Tier } from "@/lib/catalog";
+import { isAllowedImageUrl } from "@/lib/content";
+import { SAMPLE_THEMES } from "@/lib/samples";
 import { DEFAULT_DRINKS, DRINK_PRESETS, MAX_DRINKS } from "@/lib/drinks";
 
 /**
@@ -13,6 +15,8 @@ export interface AppSettings {
   drinks: { presets: string[]; defaults: string[]; max: number };
   rsvp: { maxPartySize: number };
   sections: { guestbook: boolean; map: boolean; drinks: boolean };
+  /** Photos d'exemple choisies par l'administrateur, par thème (adresses de notre stockage uniquement). */
+  samples: Record<string, string>;
 }
 
 // Photographie des valeurs du code, prise avant toute modification en place.
@@ -23,6 +27,7 @@ const DEFAULTS: AppSettings = {
   drinks: { presets: [...DRINK_PRESETS], defaults: [...DEFAULT_DRINKS], max: MAX_DRINKS },
   rsvp: { maxPartySize: 10 },
   sections: { guestbook: true, map: true, drinks: true },
+  samples: {},
 };
 const BASE_FEATURES: Record<Tier, string[]> = Object.fromEntries(TIERS.map((t) => [t, [...TIER_INFO[t].features]])) as Record<Tier, string[]>;
 
@@ -80,6 +85,14 @@ export function sanitizeSettings(raw: unknown): AppSettings {
   d.sections.guestbook = bool(at(raw, "sections", "guestbook"), true);
   d.sections.map = bool(at(raw, "sections", "map"), true);
   d.sections.drinks = bool(at(raw, "sections", "drinks"), true);
+
+  const samples = at(raw, "samples");
+  if (samples && typeof samples === "object") {
+    for (const theme of SAMPLE_THEMES) {
+      const u = (samples as Record<string, unknown>)[theme];
+      if (typeof u === "string" && u.startsWith("https://") && u.length <= 500 && isAllowedImageUrl(u)) d.samples[theme] = u;
+    }
+  }
   return d;
 }
 

@@ -15,7 +15,7 @@ import { q } from "@/lib/db";
 import { findGuest } from "@/lib/guests";
 import { parseStoredContent } from "@/lib/invitations";
 import { getTemplate } from "@/lib/templates";
-import { formatDateFr } from "@/lib/utils";
+import { appUrl, formatDateFr } from "@/lib/utils";
 
 // Page publique d'une invitation : jamais indexée par les moteurs de recherche.
 type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ g?: string }> };
@@ -36,7 +36,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!inv || inv.status !== "published") return { ...base, title: "Invitation" };
   const c = parseStoredContent(inv.content);
   const found = c.photos.find(isAllowedImageUrl);
-  const image = found ? sampleUrl(found) : undefined;
+  const shown = found ? sampleUrl(found) : undefined;
+  const image = shown?.startsWith("/") ? `${appUrl()}${shown}` : shown;
   return {
     ...base,
     title: c.title,

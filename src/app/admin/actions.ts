@@ -11,7 +11,7 @@ import { settleOrder, type OrderRow } from "@/lib/orders";
 import { deletePhotos } from "@/lib/purge";
 import { audit } from "@/lib/security";
 import { TIERS } from "@/lib/catalog";
-import { getSettings, invalidateSettings, saveSettings } from "@/lib/settings";
+import { defaultSettings, getSettings, saveSettings } from "@/lib/settings";
 
 function id(fd: FormData, key: string): string {
   const v = String(fd.get(key) ?? "");
@@ -135,8 +135,9 @@ export async function updateSettings(fd: FormData) {
     next.sections.map = fd.get("map") === "on";
     next.sections.drinks = fd.get("drinks") === "on";
   } else if (section === "reset") {
-    await q`DELETE FROM settings WHERE key = 'app'`;
-    invalidateSettings();
+    const fresh = defaultSettings();
+    fresh.samples = (await getSettings()).samples; // les photos d'exemple ont leur propre page
+    await saveSettings(fresh, admin.id);
     await audit(admin.id, "admin.settings.reset", "settings", "app");
     revalidatePath("/", "layout");
     redirect("/admin/reglages?saved=reset");

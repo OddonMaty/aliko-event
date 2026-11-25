@@ -15,15 +15,25 @@ const SAMPLE_PHOTOS: Record<string, string> = {
   autre: "1768244016479-756ee49fe26c",
 };
 
+export const SAMPLE_THEMES = Object.keys(SAMPLE_PHOTOS);
+
+/** Photo Unsplash par défaut d'un thème (ou undefined si le thème est inconnu). */
+export function unsplashUrl(theme: string, width = 1200): string | undefined {
+  const photo = SAMPLE_PHOTOS[theme];
+  return photo ? `${UNSPLASH}${photo}?auto=format&fit=crop&w=${width}&q=70` : undefined;
+}
+
 const TOKEN = /^\/samples\/([a-z-]+)\.svg$/;
 
 export function isSampleToken(src: string): boolean {
   return TOKEN.test(src);
 }
 
-/** Photo Unsplash correspondant au thème, ou la source telle quelle si ce n'est pas une photo d'exemple. */
+/**
+ * Adresse d'affichage d'une photo d'exemple : une route du site qui redirige vers la photo choisie
+ * par l'administrateur, ou vers la photo Unsplash par défaut. Fonctionne côté serveur comme côté navigateur.
+ */
 export function sampleUrl(src: string, width = 1200): string {
   const id = TOKEN.exec(src)?.[1];
-  const photo = id ? SAMPLE_PHOTOS[id] : undefined;
-  return photo ? `${UNSPLASH}${photo}?auto=format&fit=crop&w=${width}&q=70` : src;
+  return id && SAMPLE_PHOTOS[id] ? `/api/sample/${id}?w=${width}` : src;
 }
