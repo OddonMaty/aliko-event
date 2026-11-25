@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   description:
     "Choisissez un design, personnalisez votre invitation numérique, recevez votre lien et votre QR code. Mariage, anniversaire, baby shower, conférence et plus.",
   openGraph: { type: "website", siteName: "Aliko Event", locale: "fr_FR" },
-  icons: { icon: [{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }], apple: "/icons/apple-icon.png" },
+  icons: { icon: [{ url: "/icon.svg", type: "image/svg+xml" }, { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }], apple: "/icons/apple-icon.png" },
   appleWebApp: { capable: true, title: "Aliko", statusBarStyle: "default" },
 };
 
