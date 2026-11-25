@@ -28,7 +28,8 @@ export default async function SystemPage() {
 
   const checks: { label: string; ok: boolean; hint: string; critical?: boolean }[] = [
     { label: "Paiement FlexPay", ok: !test && has("FLEXPAY_MERCHANT", "FLEXPAY_TOKEN", "FLEXPAY_CALLBACK_SECRET"), critical: true, hint: test ? "Mode test actif : aucun vrai paiement." : "Identifiants FlexPay et secret de callback." },
-    { label: "E-mails (Resend)", ok: has("RESEND_API_KEY", "EMAIL_FROM"), hint: "Reçus, mot de passe oublié, notifications de réponses." },
+    { label: "E-mails (Resend)", ok: has("RESEND_API_KEY", "EMAIL_FROM"), hint: "Code de connexion par e-mail, reçus, mot de passe oublié, notifications de réponses et alertes de remboursement." },
+    { label: "Connexion avec Google", ok: has("GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"), hint: "Bouton « Continuer avec Google » sur les pages de connexion et d'inscription." },
     { label: "Notifications push", ok: has("VAPID_PRIVATE_KEY", "NEXT_PUBLIC_VAPID_PUBLIC_KEY"), hint: "Alertes sur le téléphone de l'organisateur." },
     { label: "Stockage des photos", ok: has("BLOB_READ_WRITE_TOKEN"), critical: true, hint: "Vercel Blob." },
     { label: "Anti-bot Turnstile", ok: has("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "TURNSTILE_SECRET_KEY"), hint: "Protège inscription, connexion et réponses." },

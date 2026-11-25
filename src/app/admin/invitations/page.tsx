@@ -19,11 +19,12 @@ export default async function InvitationsAdminPage({ searchParams }: { searchPar
   const [rows, count] = await Promise.all([
     q<{
       id: string; slug: string; status: string; category: string; tier: string; title: string | null; event_date: string | null;
-      expires_at: string | null; created_at: string; email: string; rsvps: number; guests: number;
+      expires_at: string | null; created_at: string; email: string; rsvps: number; guests: number; couples: number;
     }>`
       SELECT i.id, i.slug, i.status, i.category, i.tier, i.content->>'title' AS title, i.event_date::text AS event_date, i.expires_at, i.created_at, u.email,
              (SELECT count(*)::int FROM rsvps r WHERE r.invitation_id = i.id) AS rsvps,
-             (SELECT count(*)::int FROM guests g WHERE g.invitation_id = i.id) AS guests
+             (SELECT count(*)::int FROM guests g WHERE g.invitation_id = i.id) AS guests,
+             (SELECT count(*)::int FROM guests g WHERE g.invitation_id = i.id AND g.party_type = 'couple') AS couples
       FROM invitations i JOIN users u ON u.id = i.user_id
       WHERE (${status} = '' OR i.status = ${status})
         AND (${like} = '' OR i.slug ILIKE ${like} OR u.email ILIKE ${like} OR i.content->>'title' ILIKE ${like})
@@ -46,7 +47,7 @@ export default async function InvitationsAdminPage({ searchParams }: { searchPar
                 <p className="font-medium">{i.title ?? "(sans titre)"}</p>
                 <p className="text-muted-foreground text-xs break-all">{i.email} · {getCategory(i.category)?.label ?? i.category} · {i.tier}</p>
                 <p className="text-muted-foreground mt-0.5 text-xs">
-                  Événement : {fmtDate(i.event_date)} · expire : {fmtDate(i.expires_at)} · {i.guests} invité(s) · {i.rsvps} réponse(s)
+                  Événement : {fmtDate(i.event_date)} · expire : {fmtDate(i.expires_at)} · {i.guests} invité(s){i.couples ? ` (dont ${i.couples} en couple)` : ""} · {i.rsvps} réponse(s)
                 </p>
               </div>
               <StatusBadge map={INV_STATUS} value={i.status} />

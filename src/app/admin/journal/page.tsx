@@ -10,7 +10,8 @@ const TYPES: Record<string, { label: string; like: string }> = {
   erreurs: { label: "Erreurs", like: "error.%" },
   admin: { label: "Actions admin", like: "admin.%" },
   paiements: { label: "Paiements", like: "order.%" },
-  comptes: { label: "Comptes", like: "user.%" },
+  comptes: { label: "Comptes et connexions", like: "user.%" },
+  invitations: { label: "Invitations", like: "invitation.%" },
 };
 
 export default async function JournalPage({ searchParams }: { searchParams: Promise<SP> }) {

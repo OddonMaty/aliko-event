@@ -20,6 +20,9 @@ export async function deleteMyInvitation(fd: FormData) {
     SELECT id, status, order_id FROM invitations WHERE id = ${invId} AND user_id = ${user.id}`;
   if (!inv) throw new Error("Invitation introuvable");
 
+  // Une invitation suspendue par la modération ne peut pas être supprimée par son propriétaire (elle sert de preuve).
+  if (inv.status === "suspended") throw new Error("Cette invitation est suspendue : contactez le support.");
+
   if (inv.status === "awaiting_payment") {
     await q`UPDATE orders SET status = 'cancelled' WHERE id = ${inv.order_id} AND status IN ('pending','failed')`;
   }

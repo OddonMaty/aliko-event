@@ -106,6 +106,7 @@ export default async function DashboardPage() {
                       <Button asChild variant={r.status === "awaiting_payment" ? "outline" : "default"} size="sm" className="flex-1 sm:flex-none">
                         <Link href={href}>{r.status === "awaiting_payment" ? "Voir le paiement" : "Gérer"}</Link>
                       </Button>
+                      {r.status !== "suspended" && (
                       <form action={deleteMyInvitation}>
                         <input type="hidden" name="invitationId" value={r.id} />
                         <ConfirmButton
@@ -121,6 +122,7 @@ export default async function DashboardPage() {
                           {r.status === "awaiting_payment" ? "Annuler" : "Supprimer"}
                         </ConfirmButton>
                       </form>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
