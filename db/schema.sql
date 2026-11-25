@@ -174,3 +174,6 @@ CREATE TABLE login_codes (
 
 -- Date à laquelle le client a supprimé l'invitation d'une commande payée (signalée à l'admin pour remboursement éventuel)
 ALTER TABLE orders ADD COLUMN invitation_deleted_at timestamptz;
+
+-- Type d'invité : seul(e) ou en couple (la réponse compte alors 2 personnes)
+ALTER TABLE guests ADD COLUMN party_type text NOT NULL DEFAULT 'single' CHECK (party_type IN ('single','couple'));

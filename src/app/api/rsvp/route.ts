@@ -3,7 +3,6 @@ import { z } from "zod";
 import { q } from "@/lib/db";
 import { handle, json, readJson } from "@/lib/http";
 import { findGuest } from "@/lib/guests";
-import { loadCatalog } from "@/lib/settings";
 import { notifyRsvp } from "@/lib/notify";
 import { parseStoredContent } from "@/lib/invitations";
 import { assertSameOrigin, clientIp, hashIp, HttpError, rateLimit, verifyTurnstile } from "@/lib/security";
@@ -14,7 +13,7 @@ const schema = z.object({
   phone: z.string().trim().max(30).regex(/^[+\d\s().-]*$/, "Numéro invalide").optional().default(""),
   email: z.union([z.literal(""), z.string().trim().email("Email invalide").max(160)]).optional().default(""),
   attendance: z.enum(["yes", "no", "maybe"]),
-  partySize: z.number().int().min(1).max(20).default(1),
+  partySize: z.number().int().min(1).max(2).default(1),
   message: z.string().trim().max(300).optional().default(""),
   drink: z.string().trim().max(30).optional().default(""),
   guestToken: z.string().max(40).optional(),
@@ -37,10 +36,6 @@ export const POST = handle(async (req) => {
   const inv = rows[0];
   if (!inv) throw new HttpError(404, "Invitation introuvable ou expirée");
 
-  const settings = await loadCatalog();
-  if (body.partySize > settings.rsvp.maxPartySize) {
-    throw new HttpError(400, `Une réponse peut compter ${settings.rsvp.maxPartySize} personne${settings.rsvp.maxPartySize > 1 ? "s" : ""} au maximum`);
-  }
   const content = parseStoredContent(inv.content);
   if (!content.rsvpEnabled) throw new HttpError(403, "Les réponses sont désactivées pour cet événement");
   if (content.rsvpDeadline && new Date().toISOString().slice(0, 10) > content.rsvpDeadline) {
@@ -55,6 +50,8 @@ export const POST = handle(async (req) => {
   if (body.guestToken) {
     const guest = await findGuest(inv.id, body.guestToken);
     if (!guest) throw new HttpError(404, "Lien d'invité invalide");
+    // Le type d'invitation (seul(e) ou couple) est fixé par l'organisateur, pas par l'invité.
+    body.partySize = body.attendance === "no" ? 1 : guest.partyType === "couple" ? 2 : 1;
     await q`INSERT INTO rsvps (invitation_id, guest_id, name, phone, email, attendance, party_size, message, drink, ip_hash)
             VALUES (${inv.id}, ${guest.id}, ${guest.name}, ${phone}, ${body.email || null}, ${body.attendance}, ${body.partySize}, ${body.message || null}, ${drink}, ${ipHash})
             ON CONFLICT (guest_id) WHERE guest_id IS NOT NULL
@@ -63,6 +60,8 @@ export const POST = handle(async (req) => {
     await notifyRsvp(inv.id, { name: guest.name, phone, email: body.email || null, attendance: body.attendance, partySize: body.partySize, message: body.message || null, drink }, false);
     return json({ ok: true });
   }
+
+  if (body.attendance === "no") body.partySize = 1;
 
   // Doublon (même nom + même téléphone) : on met à jour la réponse précédente.
   const existing = await q<{ id: string }>`

@@ -76,7 +76,7 @@ export default async function InvitationPage({ params, searchParams }: Props) {
 
   // Invité identifié par son lien personnel (?g=...) : accueil nominatif, réponse liée, pass QR.
   const guestRow = await findGuest(inv.id, g).catch(() => null);
-  const guest = guestRow && g ? { token: g, name: guestRow.name } : undefined;
+  const guest = guestRow && g ? { token: g, name: guestRow.name, partyType: guestRow.partyType } : undefined;
   let answered: "yes" | "no" | "maybe" | null = null;
   if (guestRow) {
     const r = await q<{ attendance: "yes" | "no" | "maybe" }>`SELECT attendance FROM rsvps WHERE guest_id = ${guestRow.id}`;
@@ -98,10 +98,10 @@ export default async function InvitationPage({ params, searchParams }: Props) {
   return (
     <main className="min-h-dvh pb-24" style={{ background: template.palette.bg }}>
       <div className="mx-auto max-w-xl">
-        <InvitationView content={content} template={template} brand={!TIER_INFO[inv.tier].brandingFree} guestName={guest?.name}>
+        <InvitationView content={content} template={template} brand={!TIER_INFO[inv.tier].brandingFree} guestName={guest?.name} guestParty={guest?.partyType}>
           {content.rsvpEnabled && (
             <div id="rsvp" className="scroll-mt-4">
-              <RsvpForm slug={inv.slug} template={template} deadline={content.rsvpDeadline || undefined} guest={guest} answered={answered} drinks={content.drinksEnabled ? content.drinks : []} maxParty={settings.rsvp.maxPartySize} />
+              <RsvpForm slug={inv.slug} template={template} deadline={content.rsvpDeadline || undefined} guest={guest} answered={answered} drinks={content.drinksEnabled ? content.drinks : []} />
             </div>
           )}
           {content.guestbookEnabled && <Guestbook slug={inv.slug} template={template} guest={guest} initial={notes} />}

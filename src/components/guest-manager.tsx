@@ -19,6 +19,7 @@ export interface GuestItem {
   token: string;
   attendance: "yes" | "no" | "maybe" | null;
   checkedIn: boolean;
+  partyType: "single" | "couple";
 }
 
 const STATUS: Record<NonNullable<GuestItem["attendance"]> | "none", { label: string; variant: "success" | "destructive" | "secondary" | "outline" }> = {
@@ -43,6 +44,7 @@ export function GuestManager({ invitationId, slug, title, baseUrl, published, ca
   const router = useRouter();
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
+  const [partyType, setPartyType] = useState<"single" | "couple">("single");
   const [removing, setRemoving] = useState<string | null>(null);
 
   async function add() {
@@ -53,7 +55,7 @@ export function GuestManager({ invitationId, slug, title, baseUrl, published, ca
       const res = await fetch(`/api/invitations/${invitationId}/guests`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ names }),
+        body: JSON.stringify({ names, partyType }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error ?? "Ajout impossible");
@@ -64,6 +66,20 @@ export function GuestManager({ invitationId, slug, title, baseUrl, published, ca
       toast.error(e instanceof Error ? e.message : "Ajout impossible");
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function setType(id: string, next: "single" | "couple") {
+    try {
+      const res = await fetch(`/api/invitations/${invitationId}/guests`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ guestId: id, partyType: next }),
+      });
+      if (!res.ok) throw new Error("Modification impossible");
+      router.refresh();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Modification impossible");
     }
   }
 
@@ -103,6 +119,21 @@ export function GuestManager({ invitationId, slug, title, baseUrl, published, ca
             onChange={(e) => setText(e.target.value)}
             placeholder={"Julie Mbuyi\nFamille Kasongo\nPasteur Daniel"}
           />
+          <div role="radiogroup" aria-label="Type d'invitation" className="flex gap-2">
+            {([["single", "Seul(e)"], ["couple", "En couple"]] as const).map(([v, l]) => (
+              <button
+                key={v}
+                type="button"
+                role="radio"
+                aria-checked={partyType === v}
+                onClick={() => setPartyType(v)}
+                className={`min-h-10 flex-1 rounded-lg border px-3 text-sm transition-colors ${partyType === v ? "border-primary bg-primary/10 text-primary font-medium" : "text-muted-foreground"}`}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+          <p className="text-muted-foreground text-xs">S&apos;applique aux noms ajoutés ci-dessus. L&apos;invité voit « invitation personnelle » ou « invitation pour deux » ; vous pouvez changer le type ensuite.</p>
           <Button type="button" size="sm" className="w-full sm:w-auto" onClick={add} disabled={busy || !text.trim()}>
             {busy ? <Loader2 className="animate-spin" /> : <Plus />} Ajouter
           </Button>
@@ -134,6 +165,14 @@ export function GuestManager({ invitationId, slug, title, baseUrl, published, ca
                   <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5">
                     <span className="truncate text-sm font-medium">{g.name}</span>
                     <Badge variant={st.variant}>{st.label}</Badge>
+                    <button
+                      type="button"
+                      onClick={() => setType(g.id, g.partyType === "couple" ? "single" : "couple")}
+                      className="text-muted-foreground hover:text-foreground min-h-8 rounded-full border px-2.5 text-xs"
+                      aria-label={`Type d'invitation de ${g.name} : ${g.partyType === "couple" ? "couple" : "personnel"}. Changer`}
+                    >
+                      {g.partyType === "couple" ? "Couple" : "Seul(e)"}
+                    </button>
                     {g.checkedIn && <Badge variant="success">Entré(e)</Badge>}
                   </div>
                   <div className="grid grid-cols-[1fr_1fr_auto] items-center gap-1.5 sm:flex">

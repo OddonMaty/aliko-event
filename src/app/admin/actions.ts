@@ -131,7 +131,6 @@ export async function updateSettings(fd: FormData) {
     next.drinks.max = num(fd.get("max"));
     next.drinks.defaults = next.drinks.presets.map((p) => p.trim()).filter((p) => fd.get(`default:${p}`) === "on");
   } else if (section === "invites") {
-    next.rsvp.maxPartySize = num(fd.get("maxPartySize"));
     next.sections.guestbook = fd.get("guestbook") === "on";
     next.sections.map = fd.get("map") === "on";
     next.sections.drinks = fd.get("drinks") === "on";

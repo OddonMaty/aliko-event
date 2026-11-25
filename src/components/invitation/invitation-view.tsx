@@ -17,6 +17,8 @@ interface ViewProps {
   brand?: boolean;
   /** Prénom/nom de l'invité (lien personnel) : affiché dans l'accueil. */
   guestName?: string;
+  /** Type d'invitation de l'invité : seul(e) ou en couple. */
+  guestParty?: "single" | "couple";
   /** Aperçu intégré (éditeur, galerie) : la couverture ne prend pas tout l'écran. */
   embedded?: boolean;
   children?: ReactNode;
@@ -307,7 +309,7 @@ function Cover({ c, t, compact }: { c: InvitationContent; t: Template; compact?:
 
 /* ───────────── CORPS (commun) ───────────── */
 
-function Body({ c, t, guestName }: { c: InvitationContent; t: Template; guestName?: string }) {
+function Body({ c, t, guestName, guestParty }: { c: InvitationContent; t: Template; guestName?: string; guestParty?: "single" | "couple" }) {
   const p = t.palette;
   const left = t.layout === "minimal" || t.layout === "split";
   const align = left ? "text-left" : "text-center";
@@ -349,6 +351,11 @@ function Body({ c, t, guestName }: { c: InvitationContent; t: Template; guestNam
         <p className={`${story ? "mt-12" : ""} text-2xl italic`} style={{ fontFamily: t.fonts.display, color: p.fg }}>
           Cher(e) {guestName ? guestName : "invité(e)"}
         </p>
+        {guestName && guestParty && (
+          <p className="mt-2 text-sm" style={{ color: p.muted }}>
+            {guestParty === "couple" ? "Invitation valable pour deux personnes" : "Invitation personnelle"}
+          </p>
+        )}
       </div>
 
       {c.message && (
@@ -472,12 +479,12 @@ function Closing({ t }: { t: Template }) {
   );
 }
 
-export function InvitationView({ content, template, brand = true, guestName, embedded = false, children }: ViewProps) {
+export function InvitationView({ content, template, brand = true, guestName, guestParty, embedded = false, children }: ViewProps) {
   const p = template.palette;
   return (
     <div className="w-full min-w-0 overflow-hidden break-words" style={{ background: p.bg, color: p.fg, fontFamily: template.fonts.body }}>
       <Cover c={content} t={template} compact={embedded} />
-      <Body c={content} t={template} guestName={guestName} />
+      <Body c={content} t={template} guestName={guestName} guestParty={guestParty} />
       {children}
       <Location c={content} t={template} />
       <Closing t={template} />

@@ -13,16 +13,16 @@ interface Props {
   template: Template;
   deadline?: string;
   /** Invité identifié par son lien personnel. */
-  guest?: { token: string; name: string };
+  guest?: { token: string; name: string; partyType: "single" | "couple" };
   /** Réponse déjà enregistrée pour cet invité. */
   answered?: Att | null;
   /** Boissons proposées par l'organisateur (vide = pas de choix). */
   drinks?: string[];
-  maxParty?: number;
 }
 
-export function RsvpForm({ slug, template, deadline, guest, answered = null, drinks = [], maxParty = 10 }: Props) {
+export function RsvpForm({ slug, template, deadline, guest, answered = null, drinks = [] }: Props) {
   const p = template.palette;
+  const [party, setParty] = useState<1 | 2>(1);
   const [attendance, setAttendance] = useState<Att>(answered ?? "yes");
   const [loading, setLoading] = useState(false);
   const [done, setDone] = useState<Att | null>(answered);
@@ -51,7 +51,7 @@ export function RsvpForm({ slug, template, deadline, guest, answered = null, dri
           name: guest ? guest.name : fd.get("name"),
           phone: fd.get("phone") ?? "",
           attendance,
-          partySize: attendance === "no" ? 1 : Number(fd.get("partySize") ?? 1),
+          partySize: attendance === "no" ? 1 : guest ? (guest.partyType === "couple" ? 2 : 1) : party,
           message: fd.get("message") ?? "",
           drink: attendance === "no" ? "" : String(fd.get("drink") ?? ""),
           turnstile: token,
@@ -138,17 +138,27 @@ export function RsvpForm({ slug, template, deadline, guest, answered = null, dri
             <input name="phone" type="tel" maxLength={30} placeholder="Téléphone (optionnel)" autoComplete="tel" className={inputCls} style={field} />
           </>
         )}
-        {attendance !== "no" && (
-          <label className="flex items-center justify-between gap-3 text-sm">
-            <span>Nombre de personnes</span>
-            <select name="partySize" defaultValue="1" className="min-h-11 rounded-lg px-3 py-2 text-base" style={{ ...field, background: p.surface }}>
-              {Array.from({ length: maxParty }, (_, i) => i + 1).map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-          </label>
+        {attendance !== "no" && !guest && (
+          <div role="radiogroup" aria-label="Vous venez" className="grid grid-cols-2 gap-2">
+            {([[1, "Seul(e)"], [2, "En couple"]] as const).map(([v, l]) => (
+              <button
+                key={v}
+                type="button"
+                role="radio"
+                aria-checked={party === v}
+                onClick={() => setParty(v)}
+                className="min-h-11 rounded-lg px-3 text-sm font-medium transition-colors"
+                style={party === v ? { background: p.accent, color: p.bg, border: `1px solid ${p.accent}` } : field}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+        )}
+        {attendance !== "no" && guest && (
+          <p className="text-center text-sm" style={{ color: p.muted }}>
+            {guest.partyType === "couple" ? "Votre invitation est valable pour deux personnes." : "Votre invitation est personnelle."}
+          </p>
         )}
         {attendance !== "no" && drinks.length > 0 && (
           <label className="flex items-center justify-between gap-3 text-sm">

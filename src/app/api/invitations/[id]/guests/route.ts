@@ -9,7 +9,10 @@ import { assertSameOrigin, audit, HttpError, rateLimit } from "@/lib/security";
 
 const schema = z.object({
   names: z.array(z.string().trim().min(2, "Chaque nom doit faire au moins 2 caractères").max(80)).min(1).max(100),
+  partyType: z.enum(["single", "couple"]).default("single"),
 });
+
+const patchSchema = z.object({ guestId: z.string(), partyType: z.enum(["single", "couple"]) });
 
 // Ajout d'invités nommés (un lien personnel + un pass QR chacun).
 export const POST = handle(async (req, ctx) => {
@@ -20,7 +23,7 @@ export const POST = handle(async (req, ctx) => {
   const inv = await getOwnedInvitation(id, user.id);
   if (inv.status !== "draft" && inv.status !== "published") throw new HttpError(403, "Modification impossible");
 
-  const { names } = schema.parse(await readJson(req));
+  const { names, partyType } = schema.parse(await readJson(req));
   // Dédoublonne (sans tenir compte de la casse) et nettoie les espaces.
   const seen = new Set<string>();
   const clean = names
@@ -40,7 +43,7 @@ export const POST = handle(async (req, ctx) => {
   }
 
   const sql = getSql();
-  await sql.transaction(clean.map((name) => sql`INSERT INTO guests (invitation_id, name, token) VALUES (${inv.id}, ${name}, ${newGuestToken()})`));
+  await sql.transaction(clean.map((name) => sql`INSERT INTO guests (invitation_id, name, token, party_type) VALUES (${inv.id}, ${name}, ${newGuestToken()}, ${partyType})`));
   await audit(user.id, "guests.added", "invitation", inv.id, { count: clean.length });
   return json({ ok: true, added: clean.length });
 });
@@ -53,5 +56,17 @@ export const DELETE = handle(async (req, ctx) => {
   const guestId = new URL(req.url).searchParams.get("guestId") ?? "";
   if (!isUuid(guestId)) throw new HttpError(400, "Invité invalide");
   await q`DELETE FROM guests WHERE id = ${guestId} AND invitation_id = ${inv.id}`;
+  return json({ ok: true });
+});
+
+// Change le type d'un invité (seul(e) / en couple).
+export const PATCH = handle(async (req, ctx) => {
+  assertSameOrigin(req);
+  const user = await requireApiUser();
+  const { id } = (await ctx.params) as { id: string };
+  const inv = await getOwnedInvitation(id, user.id);
+  const body = patchSchema.parse(await readJson(req));
+  if (!isUuid(body.guestId)) throw new HttpError(400, "Invité invalide");
+  await q`UPDATE guests SET party_type = ${body.partyType} WHERE id = ${body.guestId} AND invitation_id = ${inv.id}`;
   return json({ ok: true });
 });

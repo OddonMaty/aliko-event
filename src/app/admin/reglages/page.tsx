@@ -123,11 +123,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
 
         <form action={updateSettings}>
           <Panel title="Invitations" hint="Ce que vos clients peuvent proposer à leurs invités.">
-            <div className="max-w-xs">
-              <Num name="maxPartySize" label="Personnes maximum par réponse (1 à 20)" defaultValue={s.rsvp.maxPartySize} min={1} max={20} />
-              <p className="text-muted-foreground mt-1.5 text-xs">Nombre de personnes qu&apos;un invité peut déclarer en répondant (lui compris).</p>
-            </div>
-            <fieldset className="mt-5 space-y-2">
+            <fieldset className="space-y-2">
               <legend className="text-xs font-medium">Sections disponibles</legend>
               {([["guestbook", "Mots doux (messages publics des invités)", s.sections.guestbook], ["map", "Carte du lieu", s.sections.map], ["drinks", "Choix de boisson", s.sections.drinks]] as const).map(([k, l, on]) => (
                 <label key={k} className="flex min-h-10 items-center gap-3 text-sm">
