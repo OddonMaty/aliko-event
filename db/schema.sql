@@ -177,3 +177,18 @@ ALTER TABLE orders ADD COLUMN invitation_deleted_at timestamptz;
 
 -- Type d'invité : seul(e) ou en couple (la réponse compte alors 2 personnes)
 ALTER TABLE guests ADD COLUMN party_type text NOT NULL DEFAULT 'single' CHECK (party_type IN ('single','couple'));
+
+-- ───────── Garde-fous d'intégrité (appliqués en base, indépendamment du code) ─────────
+ALTER TABLE orders ADD CONSTRAINT orders_paid_has_date CHECK (status NOT IN ('paid','refunded') OR paid_at IS NOT NULL);
+ALTER TABLE orders ADD CONSTRAINT orders_usd_amount CHECK (currency <> 'USD' OR amount = amount_usd_cents);
+ALTER TABLE invitations ADD CONSTRAINT invitations_published_complete CHECK (status <> 'published' OR (published_at IS NOT NULL AND event_date IS NOT NULL AND expires_at IS NOT NULL));
+ALTER TABLE invitations ADD CONSTRAINT invitations_expiry_needs_date CHECK (expires_at IS NULL OR event_date IS NOT NULL);
+ALTER TABLE users ADD CONSTRAINT users_email_clean CHECK (email = lower(btrim(email)));
+ALTER TABLE rsvps ADD CONSTRAINT rsvps_no_party CHECK (attendance <> 'no' OR party_size = 1);
+ALTER TABLE rsvps ADD CONSTRAINT rsvps_party_max2 CHECK (party_size <= 2) NOT VALID;
+ALTER TABLE rsvps ADD CONSTRAINT rsvps_text_len CHECK (char_length(name) BETWEEN 1 AND 80 AND (message IS NULL OR char_length(message) <= 300));
+ALTER TABLE settings ADD CONSTRAINT settings_object CHECK (jsonb_typeof(value) = 'object');
+-- Déclencheurs : orders_guard (commande payée figée, pas de retour en arrière), invitations_guard (propriétaire/formule/capacité figés,
+-- pas d'activation sans paiement, pas de réactivation après remboursement), guests_cap (capacité d'invités), same_invitation_guard
+-- (un invité ne répond que pour sa propre invitation), last_admin_guard (toujours un administrateur actif), append_only (journal et événements de paiement).
+-- Corps des fonctions : voir la migration « garde-fous » appliquée sur Neon.

@@ -48,6 +48,8 @@ export const PUT = handle(async (req, ctx) => {
   if (content.date && content.date !== inv.event_date && content.date < todayKinshasa()) {
     throw new HttpError(400, "La date de l'événement est déjà passée");
   }
+  // Une invitation en ligne doit garder une date : sans elle, son lien n'expirerait jamais.
+  if (inv.status === "published" && !content.date) throw new HttpError(400, "La date de l'événement est obligatoire pour une invitation publiée");
   const expires = content.date ? expiryFromEventDate(content.date) : null;
   try {
     await q`
