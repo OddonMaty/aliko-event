@@ -30,7 +30,7 @@ const FAQ = [
   { q: "Mes invités doivent-ils créer un compte ?", a: "Non. Ils ouvrent le lien, voient l'invitation et confirment leur présence en quelques secondes." },
   { q: "Puis-je modifier mon invitation après l'avoir publiée ?", a: "Oui. Vos modifications apparaissent immédiatement sur le même lien, sans le renvoyer." },
   { q: "Mon invitation est-elle protégée ?", a: "Votre lien est unique et impossible à deviner, les moteurs de recherche ne le référencent pas, et seul vous voyez les réponses de vos invités." },
-  { q: "Combien de temps reste-t-elle en ligne ?", a: "Jusqu'à la fin du lendemain de votre événement. Elle est ensuite supprimée automatiquement : pensez à télécharger la liste de vos invités avant." },
+  { q: "Combien de temps reste-t-elle en ligne ?", a: "Jusqu'à la fin du jour de votre événement (minuit, heure de Kinshasa). Elle est ensuite supprimée automatiquement : pensez à télécharger la liste de vos invités avant." },
 ];
 
 const TRUST = [

@@ -96,7 +96,7 @@ export default function PrivacyPage() {
         <ul>
           <li>Votre compte : tant qu&apos;il est actif, ou jusqu&apos;à votre demande de suppression.</li>
           <li>Vos commandes : pendant la durée exigée par nos obligations comptables.</li>
-          <li>Votre invitation, vos invités, leurs réponses, les mots doux et les photos : supprimés automatiquement à la fin du lendemain de la date de l&apos;événement (minuit, heure de Kinshasa), et plus tôt sur simple demande. Cette suppression est définitive.</li>
+          <li>Votre invitation, vos invités, leurs réponses, les mots doux et les photos : supprimés automatiquement à la fin du jour de l&apos;événement (minuit, heure de Kinshasa), et plus tôt sur simple demande. Cette suppression est définitive.</li>
         </ul>
       </LegalSection>
 
