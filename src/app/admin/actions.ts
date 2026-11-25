@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireAdmin } from "@/lib/admin";
+import { esc, layout, sendEmail } from "@/lib/email";
 import { q } from "@/lib/db";
 import { isUuid } from "@/lib/invitations";
 import { settleOrder, type OrderRow } from "@/lib/orders";
@@ -68,7 +69,13 @@ export async function updateOrder(fd: FormData) {
     if (rows[0]) await settleOrder(rows[0]);
   } else if (action === "refund") {
     // Le remboursement lui-même se fait chez le prestataire ; ici on le consigne et on retire l'invitation.
-    await q`UPDATE orders SET status = 'refunded' WHERE id = ${orderId} AND status = 'paid'`;
+    const done = await q<{ reference: string; email: string; name: string }>`
+      UPDATE orders o SET status = 'refunded' FROM users u
+      WHERE o.id = ${orderId} AND o.status = 'paid' AND u.id = o.user_id
+      RETURNING o.reference, u.email, u.name`;
+    if (done[0]) {
+      await sendEmail(done[0].email, "Votre remboursement", layout("Remboursement", `<p>Bonjour ${esc(done[0].name)}, votre commande <strong>${esc(done[0].reference)}</strong> est remboursée. Le délai d'arrivée dépend de votre opérateur ou de votre banque.</p>`)).catch(() => undefined);
+    }
     await q`UPDATE invitations SET status = 'suspended', updated_at = now() WHERE order_id = ${orderId} AND status IN ('draft','published')`;
   } else {
     throw new Error("Action inconnue");

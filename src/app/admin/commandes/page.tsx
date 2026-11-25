@@ -21,10 +21,10 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
     q<{
       id: string; reference: string; status: string; amount: number; currency: "USD" | "CDF"; amount_usd_cents: number;
       payment_method: string; category: string; tier: string; guest_limit: number; created_at: string; paid_at: string | null;
-      flexpay_order_number: string | null; email: string; name: string;
+      flexpay_order_number: string | null; email: string; name: string; invitation_deleted_at: string | null;
     }>`
       SELECT o.id, o.reference, o.status, o.amount, o.currency, o.amount_usd_cents, o.payment_method, o.category, o.tier, o.guest_limit,
-             o.created_at, o.paid_at, o.flexpay_order_number, u.email, u.name
+             o.created_at, o.paid_at, o.flexpay_order_number, o.invitation_deleted_at, u.email, u.name
       FROM orders o JOIN users u ON u.id = o.user_id
       WHERE (${status} = '' OR o.status = ${status})
         AND (${like} = '' OR o.reference ILIKE ${like} OR u.email ILIKE ${like} OR u.name ILIKE ${like})
@@ -61,6 +61,12 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                   <StatusBadge map={ORDER_STATUS} value={o.status} />
                 </div>
               </div>
+              {o.invitation_deleted_at && o.status === "paid" && (
+                <p className="border-destructive/40 bg-destructive/5 mt-3 rounded-lg border px-3 py-2 text-sm">
+                  Le client a supprimé son invitation le {fmtDateTime(o.invitation_deleted_at)}.{" "}
+                  {o.payment_method === "test" ? "Paiement de test : rien à rembourser." : "Examinez s'il faut le rembourser (voir la politique de remboursement)."}
+                </p>
+              )}
               {(o.status === "pending" || o.status === "failed" || o.status === "paid") && (
                 <form action={updateOrder} className="mt-3 flex flex-wrap gap-2 border-t pt-3">
                   <input type="hidden" name="orderId" value={o.id} />
@@ -68,7 +74,7 @@ export default async function OrdersPage({ searchParams }: { searchParams: Promi
                     <Button type="submit" name="action" value="check" variant="outline" size="sm"><RefreshCw className="size-4" />Vérifier avec FlexPay</Button>
                   )}
                   {o.status === "paid" && o.payment_method !== "test" && (
-                    <ConfirmButton message="Marquer cette commande comme remboursée ? L'invitation sera suspendue. Le remboursement lui-même se fait chez FlexPay." name="action" value="refund" variant="outline" size="sm"><Undo2 className="size-4" />Marquer remboursée</ConfirmButton>
+                    <ConfirmButton message="Marquer cette commande comme remboursée ? L'invitation sera suspendue. Le remboursement lui-même se fait chez FlexPay." name="action" value="refund" variant={o.invitation_deleted_at ? "default" : "outline"} size="sm"><Undo2 className="size-4" />Marquer remboursée</ConfirmButton>
                   )}
                   {o.status === "paid" && <span className="text-muted-foreground inline-flex items-center gap-1 text-xs"><Check className="size-3.5" />Confirmée par FlexPay</span>}
                 </form>

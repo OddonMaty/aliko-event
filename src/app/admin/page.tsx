@@ -24,7 +24,8 @@ export default async function AdminHome() {
         (SELECT count(*)::int FROM invitations WHERE status='published' AND expires_at < now() + interval '3 days') AS expiring,
         (SELECT count(*)::int FROM rsvps) AS rsvps,
         (SELECT count(*)::int FROM guests) AS guests,
-        (SELECT count(DISTINCT invitation_id)::int FROM abuse_reports WHERE status='open') AS reports`,
+        (SELECT count(DISTINCT invitation_id)::int FROM abuse_reports WHERE status='open') AS reports,
+        (SELECT count(*)::int FROM orders WHERE status='paid' AND invitation_deleted_at IS NOT NULL AND payment_method <> 'test') AS to_refund`,
     q<{ d: string; v: number }>`
       SELECT to_char(g.d, 'DD/MM') AS d, COALESCE(sum(o.amount_usd_cents),0)::int AS v
       FROM generate_series((now() AT TIME ZONE 'Africa/Kinshasa')::date - 29, (now() AT TIME ZONE 'Africa/Kinshasa')::date, interval '1 day') AS g(d)
@@ -44,7 +45,7 @@ export default async function AdminHome() {
   const s = k[0]!;
   const growth = s.revenue_prev ? Math.round(((s.revenue30! - s.revenue_prev) / s.revenue_prev) * 100) : null;
   const conv = s.orders30 ? Math.round((s.paid30! / s.orders30) * 100) : null;
-  const needs = (s.reports ?? 0) + (s.stuck ?? 0) + alerts.length;
+  const needs = (s.reports ?? 0) + (s.stuck ?? 0) + (s.to_refund ?? 0) + alerts.length;
 
   return (
     <>
@@ -57,6 +58,7 @@ export default async function AdminHome() {
           <strong>À traiter</strong>
           {s.reports! > 0 && <Link href="/admin/moderation" className="underline-offset-4 hover:underline">{s.reports} invitation(s) signalée(s)</Link>}
           {s.stuck! > 0 && <Link href="/admin/commandes?status=pending" className="underline-offset-4 hover:underline">{s.stuck} commande(s) en attente depuis plus d&apos;une heure</Link>}
+          {s.to_refund! > 0 && <Link href="/admin/commandes?status=paid" className="underline-offset-4 hover:underline">{s.to_refund} invitation(s) supprimée(s) par le client : remboursement à examiner</Link>}
           {alerts.length > 0 && <Link href="/admin/journal" className="underline-offset-4 hover:underline">{alerts.length} alerte(s) dans le journal</Link>}
         </div>
       )}

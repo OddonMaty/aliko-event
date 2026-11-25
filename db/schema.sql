@@ -171,3 +171,6 @@ CREATE TABLE login_codes (
   expires_at timestamptz NOT NULL,
   created_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Date à laquelle le client a supprimé l'invitation d'une commande payée (signalée à l'admin pour remboursement éventuel)
+ALTER TABLE orders ADD COLUMN invitation_deleted_at timestamptz;

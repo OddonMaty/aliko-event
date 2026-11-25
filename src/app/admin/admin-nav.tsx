@@ -17,7 +17,7 @@ const ITEMS = [
   { href: "/admin/systeme", label: "Système", icon: Settings2 },
 ] as const;
 
-export function AdminNav({ openReports }: { openReports: number }) {
+export function AdminNav({ openReports, toRefund }: { openReports: number; toRefund: number }) {
   const pathname = usePathname();
   const active = (href: string) => (href === "/admin" ? pathname === "/admin" : pathname.startsWith(href));
   return (
@@ -34,6 +34,9 @@ export function AdminNav({ openReports }: { openReports: number }) {
         >
           <Icon className="size-4" />
           {label}
+          {href === "/admin/commandes" && toRefund > 0 && (
+            <span className="bg-destructive text-destructive-foreground ml-auto rounded-full px-1.5 text-[10px] leading-4 font-semibold">{toRefund}</span>
+          )}
           {href === "/admin/moderation" && openReports > 0 && (
             <span className="bg-destructive text-destructive-foreground ml-auto rounded-full px-1.5 text-[10px] leading-4 font-semibold">{openReports}</span>
           )}
