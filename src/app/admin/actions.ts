@@ -129,7 +129,10 @@ export async function updateSettings(fd: FormData) {
   } else if (section === "boissons") {
     next.drinks.presets = String(fd.get("presets") ?? "").split("\n");
     next.drinks.max = num(fd.get("max"));
-    next.drinks.defaults = next.drinks.presets.map((p) => p.trim()).filter((p) => fd.get(`default:${p}`) === "on");
+    const checked = next.drinks.presets.map((p) => p.trim()).filter((p) => fd.get(`default:${p}`) === "on");
+    // Plus de boissons cochées que le maximum : on le dit au lieu d'en perdre en silence.
+    if (checked.length > Math.min(20, Math.max(1, next.drinks.max || 1))) redirect("/admin/reglages?erreur=boissons-max");
+    next.drinks.defaults = checked;
   } else if (section === "invites") {
     next.sections.guestbook = fd.get("guestbook") === "on";
     next.sections.map = fd.get("map") === "on";

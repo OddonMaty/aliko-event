@@ -37,8 +37,12 @@ function Num({ name, defaultValue, step = 1, min = 0, max, label: l }: { name: s
   );
 }
 
-export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string }> }) {
-  const { saved } = await searchParams;
+const ERRORS: Record<string, string> = {
+  "boissons-max": "Vous avez coché plus de boissons d'office que le maximum autorisé. Augmentez le maximum ou décochez des boissons, rien n'a été enregistré.",
+};
+
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ saved?: string; erreur?: string }> }) {
+  const { saved, erreur } = await searchParams;
   const s = await getSettings();
   const presets = s.drinks.presets;
 
@@ -46,6 +50,9 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
     <>
       <PageTitle title="Réglages" hint="Prix, formules, boissons et options des invitations. Les changements s'appliquent tout de suite aux nouvelles ventes et aux invitations en cours." />
 
+      {erreur && ERRORS[erreur] && (
+        <p role="alert" className="border-destructive/40 bg-destructive/5 mb-4 rounded-lg border px-4 py-3 text-sm">{ERRORS[erreur]}</p>
+      )}
       {saved && SAVED[saved] && (
         <p role="status" className="mb-4 flex items-center gap-2 rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm">
           <CheckCircle2 className="size-4 shrink-0 text-emerald-600 dark:text-emerald-400" />{SAVED[saved]}
@@ -73,6 +80,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                 <p className="text-muted-foreground text-xs">50 est toujours proposé : c&apos;est la base du tarif. Maximum 8 paliers, de 10 à 5000.</p>
               </div>
             </div>
+            <p className="text-muted-foreground mt-3 text-xs"><strong>Où ça s&apos;applique :</strong> boutique, page Modèles, accueil, paiement des nouvelles commandes. Les commandes déjà payées gardent leur prix.</p>
             <Save section="prix" />
           </Panel>
         </form>
@@ -91,6 +99,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               ))}
             </div>
             <p className="text-muted-foreground mt-3 text-xs">Mettre 0 étape retire le programme de la formule. Si vous réduisez une limite, les invitations qui la dépassent devront être ajustées à leur prochaine sauvegarde.</p>
+            <p className="text-muted-foreground mt-3 text-xs"><strong>Où ça s&apos;applique :</strong> texte des formules, achat, éditeur (nombre de photos et d&apos;étapes autorisé) et enregistrement des invitations.</p>
             <Save section="formules" />
           </Panel>
         </form>
@@ -114,9 +123,11 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                   </div>
                   <p className="text-muted-foreground text-xs">Après avoir ajouté une boisson dans la liste, enregistrez, puis cochez-la ici.</p>
                 </fieldset>
-                <Num name="max" label="Boissons maximum par invitation (1 à 20)" defaultValue={s.drinks.max} min={1} max={20} />
+                <Num name="max" label="Boissons que l'organisateur peut proposer (1 à 20)" defaultValue={s.drinks.max} min={1} max={20} />
+                <p className="text-muted-foreground text-xs">C&apos;est le nombre de boissons au choix dans une invitation, pas le nombre qu&apos;un invité peut prendre : chaque invité en choisit une. Mettre 1 revient à n&apos;en proposer qu&apos;une seule.</p>
               </div>
             </div>
+            <p className="text-muted-foreground mt-3 text-xs"><strong>Où ça s&apos;applique :</strong> éditeur de l&apos;organisateur (liste et plafond) et invitation publiée. Les boissons cochées d&apos;office ne concernent que les NOUVELLES invitations.</p>
             <Save section="boissons" />
           </Panel>
         </form>
@@ -132,6 +143,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
               ))}
               <p className="text-muted-foreground text-xs">Une section décochée disparaît du formulaire des organisateurs et des invitations déjà publiées.</p>
             </fieldset>
+            <p className="text-muted-foreground mt-3 text-xs"><strong>Où ça s&apos;applique :</strong> éditeur de l&apos;organisateur et invitations déjà publiées : une section décochée disparaît partout.</p>
             <Save section="invites" />
           </Panel>
         </form>
