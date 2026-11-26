@@ -129,7 +129,7 @@ export default async function HomePage() {
               <Link href="/modeles">Voir tous les modèles</Link>
             </Button>
           </div>
-          <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:gap-y-14 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-7 sm:gap-x-8 sm:gap-y-10 lg:grid-cols-3 lg:gap-y-14">
             {featured.map((t) => (
               <TemplateCard key={t.id} template={t} />
             ))}

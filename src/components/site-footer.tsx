@@ -8,8 +8,8 @@ export function SiteFooter() {
   return (
     <footer className="mt-8 md:mt-12">
       <Separator />
-      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-8 px-5 py-8 md:grid-cols-[1.4fr_1fr_1fr] md:gap-10 md:py-14">
-        <div className="col-span-2 space-y-3 md:col-span-1 md:space-y-4">
+      <div className="mx-auto hidden max-w-6xl gap-10 px-5 py-14 md:grid md:grid-cols-[1.4fr_1fr_1fr]">
+        <div className="space-y-4">
           <Brand />
           <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
             Des invitations numériques pour vos mariages, anniversaires, baptêmes, conférences et réunions.
@@ -28,10 +28,18 @@ export function SiteFooter() {
           <Link href="/tableau-de-bord" className="text-muted-foreground hover:text-foreground">Mes invitations</Link>
         </nav>
       </div>
-      <Separator />
-      <div className="text-muted-foreground mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-5 py-5 text-xs md:flex-row">
-        <p>© {new Date().getFullYear()} Aliko Event</p>
-        <nav aria-label="Informations légales" className="flex flex-wrap justify-center gap-x-5 gap-y-1">
+      <Separator className="hidden md:block" />
+      <div className="text-muted-foreground mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-5 py-4 text-xs md:flex-row md:py-5">
+        <p className="flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-center">
+          <span>© {new Date().getFullYear()} Aliko Event. Tous droits réservés.</span>
+          <span>
+            Build by{" "}
+            <a href="https://saotechagency.com" target="_blank" rel="noopener noreferrer" className="text-foreground underline-offset-4 hover:underline">
+              Sao Tech Agency
+            </a>
+          </span>
+        </p>
+        <nav aria-label="Informations légales" className="hidden flex-wrap justify-center gap-x-5 gap-y-1 md:flex">
           {LEGAL_LINKS.map((l) => (
             <Link key={l.href} href={l.href} className="hover:text-foreground">
               {l.label}

@@ -162,6 +162,20 @@
   body:has([data-tabbar]) {
     padding-bottom: calc(4rem + env(safe-area-inset-bottom));
   }
+  /* Barres d'actions propres à une page (éditeur, achat, paiement) : elles se posent au-dessus de la barre d'onglets. */
+  body:has([data-tabbar]) .above-tabbar {
+    bottom: calc(3.5rem + 1px + env(safe-area-inset-bottom));
+  }
+  body:has([data-tabbar]) .above-tabbar-sticky {
+    bottom: calc(4.25rem + 1px + env(safe-area-inset-bottom));
+  }
+  /* Pas de barre de défilement visible sur téléphone : elle décalait le contenu vers la gauche. */
+  html {
+    scrollbar-width: none;
+  }
+  html::-webkit-scrollbar {
+    display: none;
+  }
   body:has([data-tabbar]) .cookie-notice {
     bottom: calc(4.75rem + env(safe-area-inset-bottom));
   }

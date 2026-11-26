@@ -15,9 +15,6 @@ interface Props {
   user: { name: string; email: string; isAdmin: boolean } | null;
 }
 
-/** Écrans de premier niveau : la barre du bas n'y apparaît que là, comme dans une application. */
-const TOP_LEVEL = ["/", "/modeles", "/tableau-de-bord", "/notifications", "/admin", "/cgu", "/confidentialite", "/remboursement", "/cookies"];
-
 const TABS = [
   { href: "/", label: "Accueil", icon: Home },
   { href: "/modeles", label: "Modèles", icon: LayoutGrid },
@@ -40,7 +37,6 @@ function MenuRow({ href, icon: Icon, children }: { href: string; icon: typeof Ta
 export function MobileTabBar({ user }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  if (!TOP_LEVEL.includes(pathname)) return null;
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 

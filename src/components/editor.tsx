@@ -179,7 +179,7 @@ export function Editor({ initialTab, invitation, template, initialContent, rsvps
   const whatsapp = `https://wa.me/?text=${encodeURIComponent(`Vous êtes invité(e) : ${content.title}\n${link}`)}`;
 
   return (
-    <div className="grid gap-8 pb-24 md:pb-0 lg:grid-cols-[minmax(0,1fr)_400px]">
+    <div className="grid gap-8 pb-40 md:pb-0 lg:grid-cols-[minmax(0,1fr)_400px]">
       <div className="min-w-0 space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
@@ -629,8 +629,7 @@ export function Editor({ initialTab, invitation, template, initialContent, rsvps
       {/* Barre d'actions du bas (téléphone) */}
       {editable && (
         <div
-          className="bg-background/95 fixed inset-x-0 bottom-0 z-40 border-t px-3 pt-3 backdrop-blur md:hidden"
-          style={{ paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))" }}
+          className="above-tabbar bg-background/95 fixed inset-x-0 bottom-0 z-30 border-t px-3 py-3 backdrop-blur md:hidden"
         >
           <div className="flex gap-2">
             <Button type="button" variant="outline" size="lg" onClick={() => go(tab === "apercu" ? "contenu" : "apercu")}>

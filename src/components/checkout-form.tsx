@@ -163,7 +163,7 @@ export function CheckoutForm(p: Props) {
               .
             </span>
           </label>
-          <Button type="submit" size="lg" className="sticky bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-10 w-full shadow-lg md:static md:shadow-none" disabled={loading || !accepted}>
+          <Button type="submit" size="lg" className="above-tabbar-sticky sticky bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-10 w-full shadow-lg md:static md:shadow-none" disabled={loading || !accepted}>
             {loading && <Loader2 className="animate-spin" />}
             {p.testMode ? "Continuer vers le paiement simulé" : `Payer ${formatMoney(amount, currency)}`}
           </Button>

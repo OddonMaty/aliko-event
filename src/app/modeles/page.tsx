@@ -44,7 +44,7 @@ export default async function GalleryPage({ searchParams }: { searchParams: Prom
           ))}
         </div>
 
-        <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-2 gap-x-3 gap-y-7 sm:gap-x-8 sm:gap-y-10 lg:grid-cols-3">
           {list.map((t) => (
             <TemplateCard key={t.id} template={t} category={category?.id as CategoryId | undefined} />
           ))}

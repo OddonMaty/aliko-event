@@ -142,7 +142,7 @@ export function PurchasePanel({
 
     {/* Barre d'achat fixe (téléphone) : mène au choix de la formule */}
     <div
-      className="bg-background/95 fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t px-4 pt-3 backdrop-blur transition-transform duration-300 lg:hidden"
+      className="above-tabbar bg-background/95 fixed inset-x-0 bottom-0 z-30 flex items-center gap-3 border-t px-4 pt-3 backdrop-blur transition-transform duration-300 lg:hidden"
       style={{
         paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
         transform: panelInView ? "translateY(100%)" : "translateY(0)",
