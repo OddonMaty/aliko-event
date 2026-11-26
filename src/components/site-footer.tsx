@@ -6,10 +6,10 @@ import { LEGAL_LINKS } from "@/lib/legal";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-12">
+    <footer className="mt-8 md:mt-12">
       <Separator />
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 py-14 md:grid-cols-[1.4fr_1fr_1fr]">
-        <div className="space-y-4">
+      <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-8 px-5 py-8 md:grid-cols-[1.4fr_1fr_1fr] md:gap-10 md:py-14">
+        <div className="col-span-2 space-y-3 md:col-span-1 md:space-y-4">
           <Brand />
           <p className="text-muted-foreground max-w-xs text-sm leading-relaxed">
             Des invitations numériques pour vos mariages, anniversaires, baptêmes, conférences et réunions.

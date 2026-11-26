@@ -54,10 +54,10 @@ export default async function HomePage() {
             <h1 className="max-w-[14ch] text-[2.8rem] leading-[1] text-balance sm:text-7xl lg:text-[5.5rem]">
               Une invitation qui s'ouvre sur le téléphone de chaque invité.
             </h1>
-            <p className="text-muted-foreground mt-7 max-w-md text-lg leading-relaxed">
+            <p className="text-muted-foreground mt-5 max-w-md text-base sm:text-lg leading-relaxed">
               Choisissez un design, ajoutez vos photos, le lieu et le programme. Vous recevez un lien et un QR code à partager, et vos invités répondent d'un geste.
             </p>
-            <div className="mt-9 flex flex-wrap items-center gap-3">
+            <div className="mt-7 flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="w-full sm:w-auto">
                 <Link href="/modeles">Voir les modèles</Link>
               </Button>
@@ -94,9 +94,9 @@ export default async function HomePage() {
         <Separator />
 
         {/* Événements : petites cartes avec le nombre de modèles */}
-        <section className="mx-auto max-w-6xl px-5 py-14 lg:py-28">
-          <div className="mb-12 max-w-xl">
-            <h2 className="text-4xl sm:text-5xl">Pour quel événement ?</h2>
+        <section className="mx-auto max-w-6xl px-5 py-10 lg:py-28">
+          <div className="mb-8 lg:mb-12 max-w-xl">
+            <h2 className="text-3xl sm:text-5xl">Pour quel événement ?</h2>
             <p className="text-muted-foreground mt-4">Chaque type d&apos;événement a ses textes d&apos;exemple, ses designs et son tarif.</p>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
@@ -106,7 +106,7 @@ export default async function HomePage() {
                 <Link
                   key={c.id}
                   href={`/modeles?categorie=${c.id}`}
-                  className="bg-card hover:border-primary/60 focus-visible:border-primary group flex flex-col items-center gap-3 rounded-xl border p-6 text-center outline-none transition-colors"
+                  className="bg-card hover:border-primary/60 focus-visible:border-primary group flex flex-col items-center gap-3 rounded-xl border p-4 text-center sm:p-6 outline-none transition-colors"
                 >
                   <CategoryIcon name={c.icon} className="text-primary size-7" />
                   <span className="font-medium">{c.label}</span>
@@ -122,14 +122,14 @@ export default async function HomePage() {
         <Separator />
 
         {/* Designs */}
-        <section className="mx-auto max-w-6xl px-5 py-14 lg:py-28">
-          <div className="mb-12 flex flex-wrap items-end justify-between gap-4">
-            <h2 className="text-4xl sm:text-5xl">Nos designs</h2>
+        <section className="mx-auto max-w-6xl px-5 py-10 lg:py-28">
+          <div className="mb-8 lg:mb-12 flex flex-wrap items-end justify-between gap-4">
+            <h2 className="text-3xl sm:text-5xl">Nos designs</h2>
             <Button asChild variant="outline">
               <Link href="/modeles">Voir tous les modèles</Link>
             </Button>
           </div>
-          <div className="grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:gap-y-14 lg:grid-cols-3">
             {featured.map((t) => (
               <TemplateCard key={t.id} template={t} />
             ))}
@@ -139,13 +139,13 @@ export default async function HomePage() {
         <Separator />
 
         {/* Étapes : une vraie séquence */}
-        <section id="comment" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-14 lg:py-28">
-          <h2 className="max-w-xl text-4xl sm:text-5xl">De l'idée au lien partagé, en quatre étapes.</h2>
-          <ol className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <section id="comment" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-10 lg:py-28">
+          <h2 className="max-w-xl text-3xl sm:text-5xl">De l'idée au lien partagé, en quatre étapes.</h2>
+          <ol className="mt-8 grid gap-8 sm:grid-cols-2 lg:mt-14 lg:gap-10 lg:grid-cols-4">
             {STEPS.map((s, i) => (
               <li key={s.title} className="border-t pt-5">
-                <span className="numeral text-primary font-serif text-6xl leading-none">{i + 1}</span>
-                <h3 className="mt-5 font-serif text-2xl">{s.title}</h3>
+                <span className="numeral text-primary font-serif text-5xl leading-none lg:text-6xl">{i + 1}</span>
+                <h3 className="mt-3 font-serif text-2xl">{s.title}</h3>
                 <p className="text-muted-foreground mt-2 text-sm leading-relaxed">{s.text}</p>
               </li>
             ))}
@@ -155,9 +155,9 @@ export default async function HomePage() {
         <Separator />
 
         {/* Tarifs */}
-        <section id="tarifs" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-14 lg:py-28">
-          <div className="mb-12 max-w-xl">
-            <h2 className="text-4xl sm:text-5xl">Un prix, payé une seule fois.</h2>
+        <section id="tarifs" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-10 lg:py-28">
+          <div className="mb-8 lg:mb-12 max-w-xl">
+            <h2 className="text-3xl sm:text-5xl">Un prix, payé une seule fois.</h2>
             <p className="text-muted-foreground mt-4">
               Le tarif dépend du type d'événement, de la formule et du nombre d'invités. Vous payez en dollars ou en francs congolais.
             </p>
@@ -176,7 +176,7 @@ export default async function HomePage() {
                     <CardDescription>{info.blurb}</CardDescription>
                     <p className="pt-4">
                       <span className="text-muted-foreground mr-1.5 text-sm">dès</span>
-                      <span className="numeral font-serif text-5xl">{formatUsdCents(minPriceForTier(t))}</span>
+                      <span className="numeral font-serif text-4xl sm:text-5xl">{formatUsdCents(minPriceForTier(t))}</span>
                       <span className="text-muted-foreground ml-1.5 text-sm">pour {BASE_GUESTS} invités</span>
                     </p>
                   </CardHeader>
@@ -199,12 +199,28 @@ export default async function HomePage() {
             })}
           </div>
 
-          <div className="mt-16">
-            <h3 className="font-serif text-3xl">Prix par événement</h3>
+          <div className="mt-12 lg:mt-16">
+            <h3 className="font-serif text-2xl sm:text-3xl">Prix par événement</h3>
             <p className="text-muted-foreground mt-2 mb-6 max-w-xl text-sm">
               Prix pour {BASE_GUESTS} invités. Chaque invité en plus s&apos;ajoute au prix, au tarif indiqué dans la dernière colonne.
             </p>
-            <div className="rounded-xl border">
+            <ul className="divide-y rounded-xl border md:hidden">
+              {CATEGORIES.map((c) => (
+                <li key={c.id} className="px-4 py-3.5">
+                  <p className="font-medium">{c.label}</p>
+                  <dl className="mt-2 grid grid-cols-3 gap-2 text-sm">
+                    {TIERS.map((t) => (
+                      <div key={t}>
+                        <dt className="text-muted-foreground text-xs">{TIER_INFO[t].label}</dt>
+                        <dd className="numeral">{formatUsdCents(c.prices[t])}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <p className="text-muted-foreground mt-2 text-xs">+ {formatUsdCents(c.extraGuestCents)} par invité en plus</p>
+                </li>
+              ))}
+            </ul>
+            <div className="hidden rounded-xl border md:block">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -242,8 +258,8 @@ export default async function HomePage() {
         <Separator />
 
         {/* Confiance */}
-        <section className="mx-auto max-w-6xl px-5 py-20 lg:py-24">
-          <div className="grid gap-10 md:grid-cols-3">
+        <section className="mx-auto max-w-6xl px-5 py-12 lg:py-24">
+          <div className="grid gap-8 md:grid-cols-3">
             {TRUST.map((b) => (
               <div key={b.title}>
                 <h3 className="font-serif text-2xl">{b.title}</h3>
@@ -256,8 +272,8 @@ export default async function HomePage() {
         <Separator />
 
         {/* FAQ */}
-        <section id="faq" className="mx-auto grid max-w-6xl scroll-mt-20 gap-10 px-5 py-20 lg:grid-cols-[1fr_2fr] lg:py-28">
-          <h2 className="text-4xl sm:text-5xl">Questions fréquentes</h2>
+        <section id="faq" className="mx-auto grid max-w-6xl scroll-mt-20 gap-10 px-5 py-12 lg:grid-cols-[1fr_2fr] lg:py-28">
+          <h2 className="text-3xl sm:text-5xl">Questions fréquentes</h2>
           <Accordion type="single" collapsible className="border-t">
             {FAQ.map((f) => (
               <AccordionItem key={f.q} value={f.q}>

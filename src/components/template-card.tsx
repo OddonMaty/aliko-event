@@ -17,7 +17,7 @@ export function TemplateCard({ template, category }: { template: Template; categ
     .join(", ");
   return (
     <Link href={href} className="group block outline-none">
-      <div className="ring-border group-hover:ring-primary/60 group-focus-visible:ring-primary relative h-[440px] overflow-hidden rounded-sm ring-1 transition-[box-shadow,transform] duration-300 group-hover:-translate-y-1">
+      <div className="ring-border group-hover:ring-primary/60 group-focus-visible:ring-primary relative h-[400px] sm:h-[440px] overflow-hidden rounded-sm ring-1 transition-[box-shadow,transform] duration-300 group-hover:-translate-y-1">
         <div className="pointer-events-none absolute inset-x-0 top-0 origin-top scale-[0.82]" aria-hidden>
           <div className="mx-auto w-[122%] -translate-x-[10%]">
             <InvitationCover content={content} template={template} />

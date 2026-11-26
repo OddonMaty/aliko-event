@@ -28,7 +28,7 @@ export function LegalPage({ title, intro, current, children }: { title: string; 
           </nav>
         </aside>
         <article className="max-w-3xl">
-          <h1 className="text-5xl sm:text-6xl">{title}</h1>
+          <h1 className="text-4xl sm:text-6xl">{title}</h1>
           <p className="text-muted-foreground mt-3 text-sm">Dernière mise à jour : {LEGAL_UPDATED}</p>
           <p className="mt-6 text-lg leading-relaxed">{intro}</p>
           {isTestPayments() && (
