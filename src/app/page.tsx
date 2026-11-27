@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Check, Link2, Lock, ShieldCheck } from "lucide-react";
 
 import { CategoryIcon } from "@/components/category-icon";
 import { InvitationCover } from "@/components/invitation/invitation-view";
@@ -32,6 +33,8 @@ const FAQ = [
   { q: "Mon invitation est-elle protégée ?", a: "Votre lien est unique et impossible à deviner, les moteurs de recherche ne le référencent pas, et seul vous voyez les réponses de vos invités." },
   { q: "Combien de temps reste-t-elle en ligne ?", a: "Jusqu'à la fin du jour de votre événement (minuit, heure de Kinshasa). Elle est ensuite supprimée automatiquement : pensez à télécharger la liste de vos invités avant." },
 ];
+
+const TRUST_ICONS = [ShieldCheck, Link2, Lock];
 
 const TRUST = [
   { title: "Paiement vérifié", text: "Votre invitation n'est activée qu'une fois le paiement confirmé par FlexPay." },
@@ -136,12 +139,23 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <Separator />
+        <Separator className="hidden md:block" />
 
         {/* Étapes : une vraie séquence */}
-        <section id="comment" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-10 lg:py-28">
-          <h2 className="max-w-xl text-3xl sm:text-5xl">De l'idée au lien partagé, en quatre étapes.</h2>
-          <ol className="mt-8 grid gap-8 sm:grid-cols-2 lg:mt-14 lg:gap-10 lg:grid-cols-4">
+        <section id="comment" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-7 lg:py-28">
+          <h2 className="max-w-xl text-xl md:text-5xl">De l'idée au lien partagé, en quatre étapes.</h2>
+          <ol className="bg-card mt-4 divide-y rounded-2xl border md:hidden">
+            {STEPS.map((s, i) => (
+              <li key={s.title} className="flex items-start gap-3 px-4 py-3">
+                <span className="bg-primary/15 text-primary mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold">{i + 1}</span>
+                <div className="min-w-0">
+                  <h3 className="font-sans text-[15px] leading-tight font-medium">{s.title}</h3>
+                  <p className="text-muted-foreground mt-0.5 text-[13px] leading-snug">{s.text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+          <ol className="mt-14 hidden gap-10 md:grid md:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((s, i) => (
               <li key={s.title} className="border-t pt-5">
                 <span className="numeral text-primary font-serif text-5xl leading-none lg:text-6xl">{i + 1}</span>
@@ -152,17 +166,47 @@ export default async function HomePage() {
           </ol>
         </section>
 
-        <Separator />
+        <Separator className="hidden md:block" />
 
         {/* Tarifs */}
-        <section id="tarifs" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-10 lg:py-28">
-          <div className="mb-8 lg:mb-12 max-w-xl">
-            <h2 className="text-3xl sm:text-5xl">Un prix, payé une seule fois.</h2>
-            <p className="text-muted-foreground mt-4">
+        <section id="tarifs" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-7 lg:py-28">
+          <div className="mb-4 max-w-xl lg:mb-12">
+            <h2 className="text-xl md:text-5xl">Un prix, payé une seule fois.</h2>
+            <p className="text-muted-foreground mt-1.5 text-[13px] leading-snug md:mt-4 md:text-base">
               Le tarif dépend du type d'événement, de la formule et du nombre d'invités. Vous payez en dollars ou en francs congolais.
             </p>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="no-scrollbar -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-1 md:hidden">
+            {TIERS.map((t) => {
+              const info = TIER_INFO[t];
+              const highlighted = t === "standard";
+              return (
+                <div key={t} className={`bg-card flex w-[72%] shrink-0 snap-start flex-col rounded-2xl border p-4 ${highlighted ? "border-primary" : ""}`}>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-serif text-xl leading-none font-semibold">{info.label}</p>
+                    {highlighted && <Badge className="px-1.5 py-0 text-[10px]">Le plus choisi</Badge>}
+                  </div>
+                  <p className="mt-2">
+                    <span className="text-muted-foreground text-xs">dès </span>
+                    <span className="numeral font-serif text-3xl leading-none">{formatUsdCents(minPriceForTier(t))}</span>
+                  </p>
+                  <p className="text-muted-foreground text-[11px]">pour {BASE_GUESTS} invités</p>
+                  <ul className="mt-3 space-y-1.5 text-[13px] leading-snug">
+                    {info.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2">
+                        <Check className="text-primary mt-0.5 size-3.5 shrink-0" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Button asChild size="sm" variant={highlighted ? "default" : "outline"} className="mt-auto w-full">
+                    <Link href="/modeles">Choisir un modèle</Link>
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+          <div className="hidden gap-6 md:grid md:grid-cols-3">
             {TIERS.map((t) => {
               const info = TIER_INFO[t];
               const highlighted = t === "standard";
@@ -199,24 +243,26 @@ export default async function HomePage() {
             })}
           </div>
 
-          <div className="mt-12 lg:mt-16">
-            <h3 className="font-serif text-2xl sm:text-3xl">Prix par événement</h3>
-            <p className="text-muted-foreground mt-2 mb-6 max-w-xl text-sm">
+          <div className="mt-6 lg:mt-16">
+            <h3 className="font-serif text-lg md:text-3xl">Prix par événement</h3>
+            <p className="text-muted-foreground mt-1 mb-3 max-w-xl text-[13px] leading-snug md:mt-2 md:mb-6 md:text-sm">
               Prix pour {BASE_GUESTS} invités. Chaque invité en plus s&apos;ajoute au prix, au tarif indiqué dans la dernière colonne.
             </p>
             <ul className="divide-y rounded-xl border md:hidden">
               {CATEGORIES.map((c) => (
-                <li key={c.id} className="px-4 py-3.5">
-                  <p className="font-medium">{c.label}</p>
-                  <dl className="mt-2 grid grid-cols-3 gap-2 text-sm">
+                <li key={c.id} className="flex items-center justify-between gap-3 px-4 py-2.5">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium">{c.label}</p>
+                    <p className="text-muted-foreground text-[10px]">+ {formatUsdCents(c.extraGuestCents)} / invité en plus</p>
+                  </div>
+                  <dl className="grid shrink-0 grid-cols-3 gap-3 text-right text-[13px]">
                     {TIERS.map((t) => (
                       <div key={t}>
-                        <dt className="text-muted-foreground text-xs">{TIER_INFO[t].label}</dt>
+                        <dt className="text-muted-foreground text-[10px]">{TIER_INFO[t].label}</dt>
                         <dd className="numeral">{formatUsdCents(c.prices[t])}</dd>
                       </div>
                     ))}
                   </dl>
-                  <p className="text-muted-foreground mt-2 text-xs">+ {formatUsdCents(c.extraGuestCents)} par invité en plus</p>
                 </li>
               ))}
             </ul>
@@ -248,18 +294,34 @@ export default async function HomePage() {
                 </TableBody>
               </Table>
             </div>
-            <p className="text-muted-foreground mt-4 text-sm">
+            <p className="text-muted-foreground mt-3 text-xs md:mt-4 md:text-sm">
               Exemple : un mariage de 200 invités en formule Standard coûte {formatUsdCents(priceUsdCents("mariage", "standard", 200))}
               {" "}({formatUsdCents(getCategory("mariage")!.prices.standard)} + 150 invités en plus).
             </p>
           </div>
         </section>
 
-        <Separator />
+        <Separator className="hidden md:block" />
 
         {/* Confiance */}
-        <section className="mx-auto max-w-6xl px-5 py-12 lg:py-24">
-          <div className="grid gap-8 md:grid-cols-3">
+        <section className="mx-auto max-w-6xl px-5 py-6 lg:py-24">
+          <ul className="bg-card divide-y rounded-2xl border md:hidden">
+            {TRUST.map((b, i) => {
+              const Icon = TRUST_ICONS[i];
+              return (
+                <li key={b.title} className="flex items-start gap-3 px-4 py-3">
+                  <span className="bg-primary/15 text-primary flex size-8 shrink-0 items-center justify-center rounded-full">
+                    <Icon className="size-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <h3 className="font-sans text-[15px] leading-tight font-medium">{b.title}</h3>
+                    <p className="text-muted-foreground mt-0.5 text-[13px] leading-snug">{b.text}</p>
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="hidden gap-8 md:grid md:grid-cols-3">
             {TRUST.map((b) => (
               <div key={b.title}>
                 <h3 className="font-serif text-2xl">{b.title}</h3>
@@ -269,15 +331,15 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <Separator />
+        <Separator className="hidden md:block" />
 
         {/* FAQ */}
-        <section id="faq" className="mx-auto grid max-w-6xl scroll-mt-20 gap-10 px-5 py-12 lg:grid-cols-[1fr_2fr] lg:py-28">
-          <h2 className="text-3xl sm:text-5xl">Questions fréquentes</h2>
-          <Accordion type="single" collapsible className="border-t">
+        <section id="faq" className="mx-auto grid max-w-6xl scroll-mt-20 gap-3 px-5 py-7 lg:grid-cols-[1fr_2fr] lg:gap-10 lg:py-28">
+          <h2 className="text-xl md:text-5xl">Questions fréquentes</h2>
+          <Accordion type="single" collapsible className="bg-card rounded-2xl border px-4 md:border-0 md:border-t md:bg-transparent md:px-0">
             {FAQ.map((f) => (
               <AccordionItem key={f.q} value={f.q}>
-                <AccordionTrigger>{f.q}</AccordionTrigger>
+                <AccordionTrigger className="py-3 text-sm md:py-5 md:text-base">{f.q}</AccordionTrigger>
                 <AccordionContent>{f.a}</AccordionContent>
               </AccordionItem>
             ))}

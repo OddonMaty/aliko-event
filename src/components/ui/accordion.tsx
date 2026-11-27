@@ -39,7 +39,7 @@ function AccordionContent({ className, children, ...props }: React.ComponentProp
       className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm"
       {...props}
     >
-      <div className={cn("text-muted-foreground max-w-prose pb-5", className)}>{children}</div>
+      <div className={cn("text-muted-foreground max-w-prose pb-3 text-[13px] leading-snug md:pb-5 md:text-sm", className)}>{children}</div>
     </AccordionPrimitive.Content>
   );
 }
